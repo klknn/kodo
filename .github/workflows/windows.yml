@@ -7,9 +7,24 @@ jobs:
     steps:
     - uses: actions/checkout@master
 
+    - name: Add tar to path for cache
+      run: echo "C:\msys64\usr\bin" >> $env:GITHUB_PATH
+
+    - name: Mount bazel cache
+      uses: actions/cache@v3
+      with:
+        path: C:\_bzl
+        key: bazel-windows
+
     - name: Install bazelisk
       run: |
         curl -LO https://github.com/bazelbuild/bazelisk/releases/download/v1.18.0/bazelisk-windows-amd64.exe
 
     - name: Build
-      run: ./bazelisk-windows-amd64.exe build //:main
+      run: ./bazelisk-windows-amd64.exe --output_user_root=C:\_bzl build //:main
+
+    - name: Shutdown
+      run: ./bazelisk-windows-amd64.exe --output_user_root=C:\_bzl shutdown
+
+    - name: Remove symlinks from cache
+      run: (Get-Item C:\_bzl\*\install).Delete()
