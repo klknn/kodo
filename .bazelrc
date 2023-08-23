@@ -1,1 +1,1 @@
-build --cxxopt=-std=c++20 --action_env=BAZEL_CXXOPTS="-std=c++20:-Wno-sign-compare:-Wno-attributes:-Werror"
+build --cxxopt=-std=c++20 --host_cxxopt=-std=c++20 --action_env=BAZEL_CXXOPTS="-std=c++20:-Wno-sign-compare:-Wno-attributes:-Werror"
