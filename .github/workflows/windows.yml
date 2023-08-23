@@ -12,4 +12,4 @@ jobs:
         curl -LO https://github.com/bazelbuild/bazelisk/releases/download/v1.18.0/bazelisk-windows-amd64.exe
 
     - name: Build
-      run: bazelisk-windows-amd64.exe build //:main
+      run: ./bazelisk-windows-amd64.exe build //:main
