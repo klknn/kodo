@@ -10,7 +10,7 @@ cc_library(
     hdrs = ["backends/imgui_impl_glfw.h"],
     srcs = ["backends/imgui_impl_glfw.cpp"],
     strip_include_prefix = "backends",
-    deps = [":core", "@glfw_src//:glfw"],
+    deps = [":core", "@glfw//:glfw"],
     visibility = ["//visibility:public"],
 )
 

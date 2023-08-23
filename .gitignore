@@ -8,5 +8,7 @@
 !*.md
 !*.cpp
 !.gitignore
+!.clang-format
+!.bazelrc
 
 *~
