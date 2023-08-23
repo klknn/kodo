@@ -21,7 +21,7 @@ jobs:
         curl -LO https://github.com/bazelbuild/bazelisk/releases/download/v1.18.0/bazelisk-windows-amd64.exe
 
     - name: Build
-      run: ./bazelisk-windows-amd64.exe --output_user_root=C:\_bzl build --cxxopt /std:c++17 //:main
+      run: ./bazelisk-windows-amd64.exe --output_user_root=C:\_bzl build --cxxopt /std:c++20 //:main
 
     - name: Shutdown
       run: ./bazelisk-windows-amd64.exe --output_user_root=C:\_bzl shutdown
