@@ -8,6 +8,8 @@
 
 #include <stdio.h>
 
+#include <array>
+#include <cmath>
 #include <memory>
 
 #include "absl/log/log.h"
@@ -173,6 +175,26 @@ void RenderMyFirstTool() {
     }
     ImGui::EndMenuBar();
   }
+
+  static float my_color;
+  if (ImGui::ColorEdit4("Color", &my_color)) {
+    LOG(INFO) << "Color: " << my_color;
+  }
+
+  // Generate samples and plot them.
+  std::array<float, 100> samples;
+  for (int i = 0; i < samples.size(); ++i) {
+    samples[i] = std::sin(i * 0.2 + ImGui::GetTime() * 1.5);
+  }
+  ImGui::PlotLines("Samples", samples.data(), samples.size());
+
+  // Display contents in a scrolling region
+  ImGui::TextColored(ImVec4(1, 1, 0, 1), "Important Stuff");
+  ImGui::BeginChild("Scrolling");
+  for (int n = 0; n < 50; n++) {
+    ImGui::Text("%04d: Some text", n);
+  }
+  ImGui::EndChild();
   ImGui::End();
 }
 

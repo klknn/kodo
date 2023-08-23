@@ -1,0 +1,6 @@
+package kodoh;
+
+message Project {
+  optional string name = 1;
+  optional string author = 2;
+}

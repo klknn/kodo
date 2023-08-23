@@ -1,5 +1,15 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
+
+PROTOBUF_VERSION = "4.24.1"
+http_archive(
+    name = "com_google_protobuf",
+    strip_prefix = "protobuf-" + PROTOBUF_VERSION,
+    urls = ["https://github.com/protocolbuffers/protobuf/archive/refs/tags/v" + PROTOBUF_VERSION + ".tar.gz"],
+)
+load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
+protobuf_deps()
+
 # Bazel Skylib required by absl.
 http_archive(
     name = "bazel_skylib",  # 2023-05-31T19:24:07Z
@@ -9,7 +19,7 @@ http_archive(
 )
 
 http_archive(
-    name = "absl",
+    name = "com_google_absl",
     urls = ["https://github.com/abseil/abseil-cpp/archive/refs/tags/20230802.0.zip"],
     strip_prefix = "abseil-cpp-20230802.0",
     sha256 = "2942db09db29359e0c1982986167167d226e23caac50eea1f07b2eb2181169cf",
