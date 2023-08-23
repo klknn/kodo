@@ -1,0 +1,15 @@
+on: push
+name: windows
+jobs:
+  checks:
+    name: run
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@master
+
+    - name: Install bazelisk
+      run: |
+        curl -LO https://github.com/bazelbuild/bazelisk/releases/download/v1.18.0/bazelisk-windows-amd64.exe
+
+    - name: Build
+      run: bazelisk-windows-amd64.exe build //:main
