@@ -6,6 +6,8 @@
 !WORKSPACE
 !WORKSPACE.*
 !*.md
+!*.h
+!*.cc
 !*.cpp
 !.gitignore
 !.clang-format
