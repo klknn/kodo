@@ -39,6 +39,7 @@ http_archive(
     name = "hedron_compile_commands",
     url = "https://github.com/hedronvision/bazel-compile-commands-extractor/archive/" + COMPILE_COMMANDS_COMMIT + ".tar.gz",
     strip_prefix = "bazel-compile-commands-extractor-" + COMPILE_COMMANDS_COMMIT,
+    sha256 = "ed5aea1dc87856aa2029cb6940a51511557c5cac3dbbcb05a4abd989862c36b4",
 )
 load("@hedron_compile_commands//:workspace_setup.bzl", "hedron_compile_commands_setup")
 hedron_compile_commands_setup()

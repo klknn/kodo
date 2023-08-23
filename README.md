@@ -1,5 +1,7 @@
 # kodoh
 
+[![ubuntu](https://github.com/klknn/kodoh/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/klknn/kodoh/actions/workflows/ubuntu.yml)
+
 ## Setup
 
 1. Install bazelisk prebuilt binary as bazel https://github.com/bazelbuild/bazelisk/releases
