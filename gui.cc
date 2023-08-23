@@ -26,7 +26,7 @@ namespace kodoh {
 namespace {
 
 void glfw_error_callback(int error, const char* description) {
-  LOG(ERROR) << "GLFW Error " << error << ": "  << description;
+  LOG(ERROR) << "GLFW Error " << error << ": " << description;
 }
 
 }  // namespace
@@ -142,7 +142,46 @@ void Gui::Render() {
   // Start the Dear ImGui frame
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplGlfw_NewFrame();
+
+  RenderCore();
+
+  int display_w, display_h;
+  glfwGetFramebufferSize(window_, &display_w, &display_h);
+  glViewport(0, 0, display_w, display_h);
+  glClearColor(clear_color_.x * clear_color_.w, clear_color_.y * clear_color_.w,
+               clear_color_.z * clear_color_.w, clear_color_.w);
+  glClear(GL_COLOR_BUFFER_BIT);
+  ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+  glfwSwapBuffers(window_);
+}
+
+namespace {
+
+// See https://github.com/ocornut/imgui#usage.
+void RenderMyFirstTool() {
+  ImGui::Begin("My First Tool", nullptr, ImGuiWindowFlags_MenuBar);
+  if (ImGui::BeginMenuBar()) {
+    if (ImGui::BeginMenu("File")) {
+      if (ImGui::MenuItem("Open..", "Ctrl+O")) {
+        LOG(INFO) << "Open clicked.";
+      }
+      if (ImGui::MenuItem("Save", "Ctrl+S")) {
+        LOG(INFO) << "Save clicked.";
+      }
+      ImGui::EndMenu();
+    }
+    ImGui::EndMenuBar();
+  }
+  ImGui::End();
+}
+
+}  // namespace
+
+void Gui::RenderCore() {
   ImGui::NewFrame();
+
+  RenderMyFirstTool();
 
   // 1. Show the big demo window (Most of the sample code is in
   // ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear
@@ -197,15 +236,6 @@ void Gui::Render() {
 
   // Rendering
   ImGui::Render();
-  int display_w, display_h;
-  glfwGetFramebufferSize(window_, &display_w, &display_h);
-  glViewport(0, 0, display_w, display_h);
-  glClearColor(clear_color_.x * clear_color_.w, clear_color_.y * clear_color_.w,
-               clear_color_.z * clear_color_.w, clear_color_.w);
-  glClear(GL_COLOR_BUFFER_BIT);
-  ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-  glfwSwapBuffers(window_);
 }
 
 }  // namespace kodoh

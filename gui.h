@@ -16,12 +16,17 @@ class Gui {
   // Finizelizes GUI resources and libs.
   virtual ~Gui();
 
+  // Checks if GUI is closed during event loop.
   bool Close();
 
+  // Wraps RenderCore with pre/post processings in backends.
   void Render();
 
  private:
   Gui() {}  // Use Init() with error handing.
+
+  // Render only using ImGui core funcs without backends.
+  void RenderCore();
 
   // Our state
   bool show_demo_window_ = true;
