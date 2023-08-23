@@ -9,8 +9,12 @@
 !*.h
 !*.cc
 !*.cpp
+!*.yml
+
 !.gitignore
 !.clang-format
 !.bazelrc
+!.github/
+!.github/workflows
 
 *~

@@ -1,0 +1,28 @@
+on: push
+name: ubuntu
+jobs:
+  checks:
+    name: run
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+
+    - name: install dependencies
+      run: |
+        sudo apt-get update -qq
+        sudo apt install -qq -y libx11-dev libxi-dev libxinerama-dev libxcursor-dev
+
+    - name: Mount bazel cache
+      uses: actions/cache@v1
+      with:
+        path: "/home/runner/.cache/bazel"
+        key: bazel
+
+    - name: Install bazelisk
+      run: |
+        curl -LO "https://github.com/bazelbuild/bazelisk/releases/download/v1.18.0/bazelisk-linux-amd64"
+        mv bazelisk-linux-amd64 bazel
+        chmod +x bazel
+
+    - name: bazel build
+      run: ./bazel build //:main
