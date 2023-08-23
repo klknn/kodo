@@ -10,7 +10,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update -qq
-        sudo apt install -qq -y libx11-dev libxi-dev libxinerama-dev libxcursor-dev mesa-common-dev
+        sudo apt install -qq -y libx11-dev libxi-dev libxinerama-dev libxcursor-dev libxrandr-dev mesa-common-dev
 
     - name: Mount bazel cache
       uses: actions/cache@v1
