@@ -11,7 +11,7 @@ jobs:
       uses: actions/cache@v1
       with:
         path: "/private/var/tmp/_bazel_runner"
-        key: bazel-macos-v1
+        key: bazel-${{ runner.os }}-}-${{ hashFiles('WORKSPACE', 'third_party/*') }}
 
     - name: Install bazelisk
       run: |
