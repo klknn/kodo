@@ -16,7 +16,7 @@ jobs:
       uses: actions/cache@v1
       with:
         path: "/home/runner/.cache/bazel"
-        key: bazel-${{ runner.os }}-${{ hashFiles('WORKSPACE', 'third_party/*', '**/BUILD') }}
+        key: bazel-${{ runner.os }}-${{ hashFiles('WORKSPACE', '.bazelrc', 'third_party/*', '**/BUILD') }}
 
     - name: Install bazelisk
       run: |
