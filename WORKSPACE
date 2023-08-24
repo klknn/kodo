@@ -6,9 +6,30 @@ http_archive(
     name = "com_google_protobuf",
     strip_prefix = "protobuf-" + PROTOBUF_VERSION,
     urls = ["https://github.com/protocolbuffers/protobuf/archive/refs/tags/v" + PROTOBUF_VERSION + ".tar.gz"],
+    sha256 = "6a66ed430c8a5c14a4a8ae75bd4d72a155d9444ea1a752355bbb28ea5c414bda",
 )
 load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
 protobuf_deps()
+
+# Prebuilt protoc binary to skip compliation.
+http_archive(
+    name = "com_google_protobuf_protoc_linux",
+    build_file_content = 'exports_files(["bin/protoc"])',
+    urls = ["https://github.com/protocolbuffers/protobuf/releases/download/v24.1/protoc-24.1-linux-x86_64.zip"],
+    sha256 = "1b9d1467205530986d58d24d2b89b9db3c8a9e3c31ed40b2a223913480ca8987",
+)
+
+http_archive(
+    name = "com_google_protobuf_protoc_windows",
+    build_file_content = 'exports_files(["bin/protoc"])',
+    urls = ["https://github.com/protocolbuffers/protobuf/releases/download/v24.1/protoc-24.1-win64.zip"],
+)
+
+http_archive(
+    name = "com_google_protobuf_protoc_osx",
+    build_file_content = 'exports_files(["bin/protoc"])',
+    urls = ["https://github.com/protocolbuffers/protobuf/releases/download/v24.1/protoc-24.1-osx-universal_binary.zip"],
+)
 
 # Bazel Skylib required by absl.
 http_archive(

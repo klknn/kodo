@@ -20,4 +20,4 @@ jobs:
         chmod +x bazel
 
     - name: Build
-      run: ./bazel build //:main
+      run: ./bazel build --config=osx //:main
