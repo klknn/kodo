@@ -1,8 +1,8 @@
-# kodoh
+# kodo
 
-[![ubuntu](https://github.com/klknn/kodoh/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/klknn/kodoh/actions/workflows/ubuntu.yml)
-[![windows](https://github.com/klknn/kodoh/actions/workflows/windows.yml/badge.svg)](https://github.com/klknn/kodoh/actions/workflows/windows.yml)
-[![macos](https://github.com/klknn/kodoh/actions/workflows/macos.yml/badge.svg)](https://github.com/klknn/kodoh/actions/workflows/macos.yml)
+[![ubuntu](https://github.com/klknn/kodo/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/klknn/kodo/actions/workflows/ubuntu.yml)
+[![windows](https://github.com/klknn/kodo/actions/workflows/windows.yml/badge.svg)](https://github.com/klknn/kodo/actions/workflows/windows.yml)
+[![macos](https://github.com/klknn/kodo/actions/workflows/macos.yml/badge.svg)](https://github.com/klknn/kodo/actions/workflows/macos.yml)
 
 
 ## Setup

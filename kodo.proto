@@ -1,4 +1,4 @@
-package kodoh;
+package kodo;
 
 message Project {
   optional string name = 1;

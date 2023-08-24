@@ -7,7 +7,7 @@
 #include "absl/log/initialize.h"
 #include "absl/log/log.h"
 #include "gui.h"
-#include "kodoh.pb.h"
+#include "kodo.pb.h"
 
 ABSL_DECLARE_FLAG(int, stderrthreshold);  // To override in main().
 
@@ -23,13 +23,13 @@ int main(int argc, char** argv) {
     LOG(INFO) << "arg[" << i << "]: " << argv[i];
   }
 
-  kodoh::Project project;
+  kodo::Project project;
   project.set_name("untitled");
   project.set_author("unknown");
   LOG(INFO) << "Project proto\n" << project.Utf8DebugString();
 
   // Launch GUI.
-  std::unique_ptr<kodoh::Gui> gui = kodoh::Gui::Init();
+  std::unique_ptr<kodo::Gui> gui = kodo::Gui::Init();
   while (!gui->Close()) {
     gui->Render();
   }

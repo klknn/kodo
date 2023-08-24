@@ -2,13 +2,13 @@ load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_proto_library", "cc_library")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 
 proto_library(
-    name = "kodoh_proto",
-    srcs = ["kodoh.proto"],
+    name = "kodo_proto",
+    srcs = ["kodo.proto"],
 )
 
 cc_proto_library(
-    name = "kodoh_cc_proto",
-    deps = [":kodoh_proto"],
+    name = "kodo_cc_proto",
+    deps = [":kodo_proto"],
 )
 
 cc_library(
@@ -28,7 +28,7 @@ cc_binary(
     srcs = ["main.cc"],
     deps = [
         ":gui",
-        ":kodoh_cc_proto",
+        ":kodo_cc_proto",
         "@com_google_absl//absl/flags:parse",
         "@com_google_absl//absl/log:log",
         "@com_google_absl//absl/log:flags",

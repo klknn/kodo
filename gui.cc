@@ -23,7 +23,7 @@
 #endif
 #include <GLFW/glfw3.h>  // Will drag system OpenGL headers
 
-namespace kodoh {
+namespace kodo {
 
 namespace {
 
@@ -260,4 +260,4 @@ void Gui::RenderCore() {
   ImGui::Render();
 }
 
-}  // namespace kodoh
+}  // namespace kodo

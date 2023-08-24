@@ -6,7 +6,7 @@
 #define GL_SILENCE_DEPRECATION
 #include <GLFW/glfw3.h>
 
-namespace kodoh {
+namespace kodo {
 
 class Gui {
  public:
@@ -35,4 +35,4 @@ class Gui {
   GLFWwindow* window_;
 };
 
-}  // namespace kodoh
+}  // namespace kodo
