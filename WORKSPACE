@@ -29,6 +29,7 @@ http_archive(
     name = "com_google_protobuf_protoc_osx",
     build_file_content = 'exports_files(["bin/protoc"])',
     urls = ["https://github.com/protocolbuffers/protobuf/releases/download/v24.1/protoc-24.1-osx-universal_binary.zip"],
+    sha256 = "f63e6255823cc56bc2b6240c55ea1f60ccee7cc2c0e30d99a41d0871c0eee90c",
 )
 
 # Bazel Skylib required by absl.
