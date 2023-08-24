@@ -1,5 +1,13 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
+PORTAUDIO_COMMIT = "95a5c4ba645e01b32f70458f8ddcd92edd62f982"
+http_archive(
+    name = "portaudio",
+    build_file = "@//third_party:BUILD.portaudio",
+    urls = ["https://github.com/PortAudio/portaudio/archive/" + PORTAUDIO_COMMIT + ".zip"],
+    strip_prefix = "portaudio-" + PORTAUDIO_COMMIT,
+    sha256 = "76ae14544d200094cd42496df3da8cd3b8d0fb84a15f19f0936b62c9c9e9286a",
+)
 
 PROTOBUF_VERSION = "4.24.1"
 http_archive(
