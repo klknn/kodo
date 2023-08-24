@@ -4,6 +4,6 @@ build --cxxopt=-std=c++20 --host_cxxopt=-std=c++20 --action_env=BAZEL_CXXOPTS="-
 # For --config=linux, this will use protoc prebuilt bin (~4.5min -> ~1.1min)
 build:linux --proto_compiler=@com_google_protobuf_protoc_linux//:bin/protoc
 
-build:windows --proto_compiler=@com_google_protobuf_protoc_windows//:bin/protoc --cxxopt /std:c++20
+build:windows --proto_compiler=@com_google_protobuf_protoc_windows//:bin/protoc.exe --cxxopt /std:c++20
 
 build:osx --proto_compiler=@com_google_protobuf_protoc_osx//:bin/protoc

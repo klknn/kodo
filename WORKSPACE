@@ -21,7 +21,7 @@ http_archive(
 
 http_archive(
     name = "com_google_protobuf_protoc_windows",
-    build_file_content = 'exports_files(["bin/protoc"])',
+    build_file_content = 'exports_files(["bin/protoc.exe"])',
     urls = ["https://github.com/protocolbuffers/protobuf/releases/download/v24.1/protoc-24.1-win64.zip"],
 )
 
