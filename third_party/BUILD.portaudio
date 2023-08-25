@@ -46,6 +46,7 @@ cc_library(
         "include",
         "src/common",
         "src/os/unix",
+        "src/os/win",
     ],
     linkopts = select({
         "@platforms//os:linux": [
