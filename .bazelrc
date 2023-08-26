@@ -1,7 +1,7 @@
 # For any configs.
 build --cxxopt=-std=c++20 --host_cxxopt=-std=c++20 --action_env=BAZEL_CXXOPTS="-std=c++20:-Wno-sign-compare:-Wno-attributes:-Werror"
 
-# For --config=linux, this will use protoc prebuilt bin (~4.5min -> ~1.1min)
+# Use protoc prebuilt bin (~4.5min -> ~1.1min)
 build:linux --proto_compiler=@com_google_protobuf_protoc_linux//:bin/protoc
 
 build:windows --proto_compiler=@com_google_protobuf_protoc_windows//:bin/protoc.exe --cxxopt /std:c++20

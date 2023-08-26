@@ -9,6 +9,7 @@
 #include "absl/log/initialize.h"
 #include "absl/log/log.h"
 #include "absl/status/status.h"
+#include "absl/strings/str_format.h"
 #include "gui.h"
 #include "kodo.pb.h"
 #include "portaudio.h"
@@ -37,20 +38,23 @@ absl::Status ListAudioDevices() {
       LOG(INFO) << "Device: " << i;
     }
     const PaDeviceInfo* deviceInfo = Pa_GetDeviceInfo(i);
-    printf("Name                        = %s\n", deviceInfo->name);
-    printf("Host API                    = %s\n",
-           Pa_GetHostApiInfo(deviceInfo->hostApi)->name);
-    printf("Max inputs = %d", deviceInfo->maxInputChannels);
-    printf(", Max outputs = %d\n", deviceInfo->maxOutputChannels);
+    LOG(INFO) << absl::StrFormat("Name                        = %s",
+                                 deviceInfo->name);
+    LOG(INFO) << absl::StrFormat("Host API                    = %s",
+                                 Pa_GetHostApiInfo(deviceInfo->hostApi)->name);
+    LOG(INFO) << absl::StrFormat("Max inputs = %d",
+                                 deviceInfo->maxInputChannels);
+    LOG(INFO) << absl::StrFormat(", Max outputs = %d",
+                                 deviceInfo->maxOutputChannels);
 
-    printf("Default low input latency   = %8.4f\n",
-           deviceInfo->defaultLowInputLatency);
-    printf("Default low output latency  = %8.4f\n",
-           deviceInfo->defaultLowOutputLatency);
-    printf("Default high input latency  = %8.4f\n",
-           deviceInfo->defaultHighInputLatency);
-    printf("Default high output latency = %8.4f\n",
-           deviceInfo->defaultHighOutputLatency);
+    LOG(INFO) << absl::StrFormat("Default low input latency   = %8.4f",
+                                 deviceInfo->defaultLowInputLatency);
+    LOG(INFO) << absl::StrFormat("Default low output latency  = %8.4f",
+                                 deviceInfo->defaultLowOutputLatency);
+    LOG(INFO) << absl::StrFormat("Default high input latency  = %8.4f",
+                                 deviceInfo->defaultHighInputLatency);
+    LOG(INFO) << absl::StrFormat("Default high output latency = %8.4f",
+                                 deviceInfo->defaultHighOutputLatency);
   }
   return absl::OkStatus();
 }
@@ -68,8 +72,8 @@ int main(int argc, char** argv) {
   }
 
   kodo::Project project;
-  project.set_name("untitled");
-  project.set_author("unknown");
+  project.set_name("<untitled>");
+  project.set_author("<unknown>");
   LOG(INFO) << "Project proto\n" << project.Utf8DebugString();
 
   PaError err = Pa_Initialize();
