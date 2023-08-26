@@ -11,6 +11,7 @@
 #include <array>
 #include <cmath>
 #include <memory>
+#include <vector>
 
 #include "ImCurveEdit.h"
 #include "ImSequencer.h"
@@ -406,7 +407,7 @@ void RenderSequencer() {
     ImGui::SameLine();
     ImGui::InputInt("Frame Max", &mySequence.mFrameMax);
     ImGui::PopItemWidth();
-    Sequencer(
+    ImSequencer::Sequencer(
         &mySequence, &currentFrame, &expanded, &selectedEntry, &firstFrame,
         ImSequencer::SEQUENCER_EDIT_STARTEND | ImSequencer::SEQUENCER_ADD |
             ImSequencer::SEQUENCER_DEL | ImSequencer::SEQUENCER_COPYPASTE |
