@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <memory>
@@ -277,25 +278,25 @@ struct RampEdit : public ImCurveEdit::Delegate {
 struct MySequence : public ImSequencer::SequenceInterface {
   // interface with sequencer
 
-  virtual int GetFrameMin() const { return mFrameMin; }
-  virtual int GetFrameMax() const { return mFrameMax; }
-  virtual int GetItemCount() const { return (int)myItems.size(); }
+  int GetFrameMin() const override { return mFrameMin; }
+  int GetFrameMax() const override { return mFrameMax; }
+  int GetItemCount() const override { return (int)myItems.size(); }
 
-  virtual int GetItemTypeCount() const {
+  int GetItemTypeCount() const override {
     return sizeof(SequencerItemTypeNames) / sizeof(char*);
   }
-  virtual const char* GetItemTypeName(int typeIndex) const {
+  const char* GetItemTypeName(int typeIndex) const override {
     return SequencerItemTypeNames[typeIndex];
   }
-  virtual const char* GetItemLabel(int index) const {
+  const char* GetItemLabel(int index) const override {
     static char tmps[512];
     snprintf(tmps, 512, "[%02d] %s", index,
              SequencerItemTypeNames[myItems[index].mType]);
     return tmps;
   }
 
-  virtual void Get(int index, int** start, int** end, int* type,
-                   unsigned int* color) {
+  void Get(int index, int** start, int** end, int* type,
+           unsigned int* color) override {
     MySequenceItem& item = myItems[index];
     if (color)
       *color =
@@ -304,28 +305,17 @@ struct MySequence : public ImSequencer::SequenceInterface {
     if (end) *end = &item.mFrameEnd;
     if (type) *type = item.mType;
   }
-  virtual void Add(int type) {
+  void Add(int type) override {
     myItems.push_back(MySequenceItem{type, 0, 10, false});
   };
-  virtual void Del(int index) { myItems.erase(myItems.begin() + index); }
-  virtual void Duplicate(int index) { myItems.push_back(myItems[index]); }
+  void Del(int index) override { myItems.erase(myItems.begin() + index); }
+  void Duplicate(int index) override { myItems.push_back(myItems[index]); }
 
-  virtual size_t GetCustomHeight(int index) {
+  size_t GetCustomHeight(int index) override {
     return myItems[index].mExpanded ? 300 : 0;
   }
 
-  // my datas
-  MySequence() : mFrameMin(0), mFrameMax(0) {}
-  int mFrameMin, mFrameMax;
-  struct MySequenceItem {
-    int mType;
-    int mFrameStart, mFrameEnd;
-    bool mExpanded;
-  };
-  std::vector<MySequenceItem> myItems;
-  RampEdit rampEdit;
-
-  virtual void DoubleClick(int index) {
+  void DoubleClick(int index) override {
     if (myItems[index].mExpanded) {
       myItems[index].mExpanded = false;
       return;
@@ -334,9 +324,9 @@ struct MySequence : public ImSequencer::SequenceInterface {
     myItems[index].mExpanded = !myItems[index].mExpanded;
   }
 
-  virtual void CustomDraw(int index, ImDrawList* draw_list, const ImRect& rc,
-                          const ImRect& legendRect, const ImRect& clippingRect,
-                          const ImRect& legendClippingRect) {
+  void CustomDraw(int index, ImDrawList* draw_list, const ImRect& rc,
+                  const ImRect& legendRect, const ImRect& clippingRect,
+                  const ImRect& legendClippingRect) override {
     static const char* labels[] = {"Translation", "Rotation", "Scale"};
 
     rampEdit.mMax = ImVec2(float(mFrameMax), 1.f);
@@ -359,8 +349,8 @@ struct MySequence : public ImSequencer::SequenceInterface {
     ImCurveEdit::Edit(rampEdit, diff, 137 + index, &clippingRect);
   }
 
-  virtual void CustomDrawCompact(int index, ImDrawList* draw_list,
-                                 const ImRect& rc, const ImRect& clippingRect) {
+  void CustomDrawCompact(int index, ImDrawList* draw_list, const ImRect& rc,
+                         const ImRect& clippingRect) override {
     rampEdit.mMax = ImVec2(float(mFrameMax), 1.f);
     rampEdit.mMin = ImVec2(float(mFrameMin), 0.f);
     draw_list->PushClipRect(clippingRect.Min, clippingRect.Max, true);
@@ -377,19 +367,34 @@ struct MySequence : public ImSequencer::SequenceInterface {
     }
     draw_list->PopClipRect();
   }
+
+  struct MySequenceItem {
+    int mType;
+    int mFrameStart, mFrameEnd;
+    bool mExpanded;
+  };
+
+  MySequence(int frameMin, int frameMax, std::vector<MySequenceItem> items)
+      : mFrameMin(frameMin), mFrameMax(frameMax), myItems(std::move(items)) {}
+
+  // my datas
+  int mFrameMin = 0;
+  int mFrameMax = 0;
+  std::vector<MySequenceItem> myItems;
+  RampEdit rampEdit;
 };
 
 // From https://github.com/CedricGuillemet/ImGuizmo/blob/master/example/main.cpp
 void RenderSequencer() {
   // sequence with default values
-  MySequence mySequence;
-  mySequence.mFrameMin = -100;
-  mySequence.mFrameMax = 1000;
-  mySequence.myItems.push_back(MySequence::MySequenceItem{0, 10, 30, false});
-  mySequence.myItems.push_back(MySequence::MySequenceItem{1, 20, 30, true});
-  mySequence.myItems.push_back(MySequence::MySequenceItem{3, 12, 60, false});
-  mySequence.myItems.push_back(MySequence::MySequenceItem{2, 61, 90, false});
-  mySequence.myItems.push_back(MySequence::MySequenceItem{4, 90, 99, false});
+  // static std::vector<MySequence::MySequenceItem> initItems;
+  static MySequence mySequence{-100,
+                               1000,
+                               {{0, 10, 30, false},
+                                {1, 20, 30, true},
+                                {3, 12, 60, false},
+                                {2, 61, 90, false},
+                                {4, 90, 99, false}}};
 
   ImGui::SetNextWindowSize(ImVec2(940, 480), ImGuiCond_Appearing);
   ImGui::Begin("Sequencer");
@@ -447,9 +452,9 @@ void Gui::RenderCore() {
 
     ImGui::Text("This is some useful text.");  // Display some text (you can
                                                // use a format strings too)
-    ImGui::Checkbox(
-        "Demo Window",
-        &show_demo_window_);  // Edit bools storing our window open/close state
+    ImGui::Checkbox("Demo Window",
+                    &show_demo_window_);  // Edit bools storing our window
+                                          // open/close state
     ImGui::Checkbox("Another Window", &show_another_window_);
 
     ImGui::SliderFloat("float", &f, 0.0f,
@@ -475,8 +480,8 @@ void Gui::RenderCore() {
     ImGui::Begin(
         "Another Window",
         &show_another_window_);  // Pass a pointer to our bool variable (the
-                                 // window will have a closing button that will
-                                 // clear the bool when clicked)
+                                 // window will have a closing button that
+                                 // will clear the bool when clicked)
     ImGui::Text("Hello from another window!");
     if (ImGui::Button("Close Me")) show_another_window_ = false;
     ImGui::End();

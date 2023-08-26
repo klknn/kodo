@@ -29,7 +29,8 @@ cc_library(
 cc_binary(
     name = "main",
     srcs = ["main.cc"],
-    features = ["fully_static_link"],
+    # TODO(klknn): Test this in linux.
+    # features = ["fully_static_link"],
     deps = [
         ":gui",
         ":kodo_cc_proto",
