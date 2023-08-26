@@ -1,6 +1,10 @@
-# C++ compiler.
+# Use C++20.
 build --cxxopt=-std=c++20 --host_cxxopt=-std=c++20 --action_env=BAZEL_CXXOPTS="-std=c++20:-Wno-sign-compare:-Wno-attributes:-Werror"
-build:windows --cxxopt /std:c++20
+build:windows --cxxopt=/std:c++20 --host_cxxopt=/IGNORE:9025
+# Static link VisualC runtime.
+# https://learn.microsoft.com/ja-jp/cpp/c-runtime-library/crt-library-features?view=msvc-170
+# https://learn.microsoft.com/ja-jp/cpp/build/reference/nodefaultlib-ignore-libraries?view=msvc-170
+build:windows --copt=/MT --linkopt=/NODEFAULTLIB:msvcrt.lib --host_copt=/IGNORE:9002
 
 # Use protoc prebuilt bin (~4.5min -> ~1.1min)
 build:linux --proto_compiler=@com_google_protobuf_protoc_linux//:bin/protoc
