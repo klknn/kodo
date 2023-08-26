@@ -64,6 +64,15 @@ http_archive(
     sha256 = "16b9d46385fb38340691c4dce7cf4547b161866f9c85fa588293df27e1667bfd",
 )
 
+IM_GUIZMO_COMMIT = "822be7b44c37dbe98d328739ebe0d5a1ea87ecfc"
+http_archive(
+    name = "imguizmo",
+    url = "https://github.com/CedricGuillemet/ImGuizmo/archive/" + IM_GUIZMO_COMMIT + ".zip",
+    strip_prefix = "ImGuizmo-" + IM_GUIZMO_COMMIT,
+    build_file = "@//third_party:BUILD.imguizmo",
+    sha256 = "4a5f9e127b7eab9453a0d2ad4c945e47134e16a4be9bfc6e263dc573e316f299"
+)
+
 http_archive(
     name = "glfw",
     url = "https://github.com/glfw/glfw/releases/download/3.3.8/glfw-3.3.8.zip",

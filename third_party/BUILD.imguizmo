@@ -1,0 +1,24 @@
+# -*- mode:bazel-build -*-
+
+NAMES = [
+    "GraphEditor",
+    "ImCurveEdit",
+    "ImGradient",
+    "ImGuizmo",
+    "ImSequencer",
+]
+
+[cc_library(
+    name = name,
+    hdrs = [name + ".h"],
+    srcs = [name + ".cpp"],
+    deps = ["@imgui//:core"],
+    visibility = ["//visibility:public"],
+) for name in NAMES]
+
+cc_library(
+    name = "ImZoomSlider",
+    hdrs = ["ImZoomSlider.h"],
+    deps = ["@imgui//:core"],
+    visibility = ["//visibility:public"],
+)

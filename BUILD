@@ -21,6 +21,8 @@ cc_library(
         "@imgui//:core",
         "@imgui//:backends_glfw",
         "@imgui//:backends_opengl3",
+        "@imguizmo//:ImCurveEdit",
+        "@imguizmo//:ImSequencer",
     ],
 )
 
