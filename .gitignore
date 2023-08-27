@@ -5,6 +5,7 @@
 !BUILD.*
 !WORKSPACE
 !WORKSPACE.*
+!LICENSE
 !*.md
 !*.h
 !*.cc
