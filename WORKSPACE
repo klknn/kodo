@@ -1,4 +1,5 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
 PORTAUDIO_COMMIT = "95a5c4ba645e01b32f70458f8ddcd92edd62f982"
 http_archive(
@@ -80,6 +81,22 @@ http_archive(
     build_file = "//third_party:BUILD.glfw",
     sha256 = "4d025083cc4a3dd1f91ab9b9ba4f5807193823e565a5bcf4be202669d9911ea6",
 )
+
+# VST3 SDK (3.7.8).
+git_repository(
+    name = "vst3sdk",
+    tag = "v3.7.8_build_34",
+    remote = "https://github.com/steinbergmedia/vst3sdk",
+    recursive_init_submodules = True,
+    build_file = "//third_party:BUILD.vst3sdk",
+)
+# For debugging BUILD.vst3sdk.
+# new_local_repository(
+#     name = "vst3sdk",
+#     path = "C:/repos/vst3sdk",
+#     build_file = "//third_party:BUILD.vst3sdk",
+# )
+
 
 # Hedron's Compile Commands Extractor for Bazel
 # https://github.com/hedronvision/bazel-compile-commands-extractor

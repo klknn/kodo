@@ -1,0 +1,58 @@
+# -*- mode:bazel-build -*-
+
+cc_library(
+    name = "base",
+    hdrs = glob(["base/**/*.h"]),
+    srcs = glob(["base/**/*.cpp"]),
+    deps = [
+        ":pluginterfaces",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "pluginterfaces",
+    hdrs = glob(["pluginterfaces/**/*.h"]),
+    srcs = glob(["pluginterfaces/**/*.cpp"]),
+    visibility = ["//visibility:public"],
+    linkopts = select({
+        "@platforms//os:windows": ["ole32.lib"],  # For COM in funknown.h.
+        "@platforms//os:osx": [],
+        "@platforms//os:linux": [],
+    })
+)
+
+COMMON_SRCS = glob(
+    include = ["public.sdk/source/**/*.cpp"],
+    exclude = [
+        "public.sdk/source/vst3stdsdk.cpp",  # only includes cpp.
+        "public.sdk/source/vst/basewrapper/basewrapper.sdk.cpp",  # only includes cpp.
+        "public.sdk/source/vst/aaxwrapper/*.cpp",
+        "public.sdk/source/vst/auwrapper/usediids.cpp", # Not to redefine iids in source/vst/vstinitiids.cpp.
+        "public.sdk/source/vst/vstgui*",
+        "public.sdk/source/vst/vst2wrapper/*.cpp",  # TODO: support this.
+        "public.sdk/source/vst/hosting/module_win32.cpp",
+        "public.sdk/source/vst/hosting/module_linux.cpp",
+        "public.sdk/source/vst/hosting/module_mac.mm",
+        "public.sdk/source/main/**/*.cpp",
+    ]
+)
+
+cc_library(
+    name = "public_sdk",
+    # For source/vst/vstsinglecomponenteffect.cpp
+    defines = ["PROJECT_INCLUDES_VSTEDITCONTROLLER"],
+    hdrs = glob(
+        ["public.sdk/source/**/*.h"],
+    ),
+    srcs = COMMON_SRCS + select({
+        "@platforms//os:windows": ["public.sdk/source/vst/hosting/module_win32.cpp"],
+        "@platforms//os:linux": ["public.sdk/source/vst/hosting/module_linux.cpp"],
+        "@platforms//os:osx": ["public.sdk/source/vst/hosting/module_mac.mm"],
+    }),
+    deps = [
+        ":base",
+        ":pluginterfaces",
+    ],
+    visibility = ["//visibility:public"],
+)

@@ -1,20 +1,21 @@
 #include <filesystem>
-#include <memory>
+#include <string>
 
 #include "absl/cleanup/cleanup.h"
 #include "absl/flags/declare.h"
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
-#include "absl/log/check.h"
 #include "absl/log/initialize.h"
 #include "absl/log/log.h"
 #include "absl/status/status.h"
 #include "absl/strings/str_format.h"
 #include "gui.h"
 #include "kodo.pb.h"
+#include "plugin_vst3.h"
 #include "portaudio.h"
 
 ABSL_FLAG(bool, gui, true, "Will launch GUI.");
+ABSL_FLAG(std::string, test_vst3, "", "Test the given VST3 on launch.");
 ABSL_DECLARE_FLAG(int, stderrthreshold);  // To override in main().
 
 // From https://github.com/PortAudio/portaudio/blob/master/examples/pa_devs.c
@@ -82,8 +83,15 @@ int main(int argc, char** argv) {
     LOG(ERROR) << "Pa_Initialize failed: " << Pa_GetErrorText(err);
     return err;
   }
-  absl::Status status = ListAudioDevices();
-  LOG_IF(ERROR, !status.ok()) << status;
+
+  if (absl::Status status = ListAudioDevices(); !status.ok()) {
+    LOG(ERROR) << status;
+  }
+  if (absl::Status status =
+          kodo::LoadVst3Plugin(absl::GetFlag(FLAGS_test_vst3)).status();
+      !status.ok()) {
+    LOG(ERROR) << status;
+  }
 
   if (!absl::GetFlag(FLAGS_gui)) {
     LOG(INFO) << "Skip GUI by --gui=false.";

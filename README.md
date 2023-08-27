@@ -36,6 +36,7 @@ Experimental digital audio workstation software.
 - RtMidi tutorial http://www.music.mcgill.ca/~gary/rtmidi/
 - Imgui useful extensions https://github.com/ocornut/imgui/wiki/Useful-Extensions
 - VST3 SDK doc https://steinbergmedia.github.io/vst3_doc/
+  - Host examples https://github.com/steinbergmedia/vst3_public_sdk/tree/v3.7.8_build_34/samples/vst-hosting
 - Minimal vst3 host app https://github.com/hotwatermorning/Terra/
   - Author's notes in Japanese https://hwm.hatenablog.com/entry/2014/12/01/233320
 - Open exchange format for DAW projects https://github.com/bitwig/dawproject

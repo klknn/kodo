@@ -26,6 +26,20 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "plugin_vst3",
+    hdrs = ["plugin_vst3.h"],
+    srcs = ["plugin_vst3.cc"],
+    deps = [
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/log:log",
+        "@vst3sdk//:pluginterfaces",
+        "@vst3sdk//:public_sdk",
+    ],
+)
+
 cc_binary(
     name = "main",
     srcs = ["main.cc"],
@@ -33,11 +47,11 @@ cc_binary(
     # features = ["fully_static_link"],
     deps = [
         ":gui",
+        ":plugin_vst3",
         ":kodo_cc_proto",
         "@com_google_absl//absl/cleanup",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/flags:parse",
-        "@com_google_absl//absl/log:check",
         "@com_google_absl//absl/log:log",
         "@com_google_absl//absl/log:flags",
         "@com_google_absl//absl/log:initialize",
