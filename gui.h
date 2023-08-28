@@ -19,14 +19,17 @@ class Gui {
   // Checks if GUI is closed during event loop.
   bool Close();
 
-  // Wraps RenderCore with pre/post processings in backends.
-  void Render();
+  void Begin();
 
- private:
-  Gui() {}  // Use Init() with error handing.
+  void End();
 
   // Render only using ImGui core funcs without backends.
   void RenderCore();
+
+  void* GetHandle();
+
+ private:
+  Gui() {}  // Use Init() with error handing.
 
   // Our state
   bool show_demo_window_ = true;

@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <filesystem>
 #include <string>
 
@@ -87,10 +88,18 @@ int main(int argc, char** argv) {
   if (absl::Status status = ListAudioDevices(); !status.ok()) {
     LOG(ERROR) << status;
   }
-  if (absl::Status status =
-          kodo::LoadVst3Plugin(absl::GetFlag(FLAGS_test_vst3)).status();
-      !status.ok()) {
-    LOG(ERROR) << status;
+
+  kodo::ControllerPtr controller(nullptr, nullptr);
+  auto vst3_module = kodo::LoadVst3Plugin(absl::GetFlag(FLAGS_test_vst3));
+  if (vst3_module.ok()) {
+    auto controller_or = kodo::GetEditController(*vst3_module);
+    if (controller_or.ok()) {
+      controller = std::move(*controller_or);
+    } else {
+      LOG(ERROR) << controller_or.status();
+    }
+  } else {
+    LOG(ERROR) << vst3_module.status();
   }
 
   if (!absl::GetFlag(FLAGS_gui)) {
@@ -101,6 +110,14 @@ int main(int argc, char** argv) {
   // Launch GUI.
   std::unique_ptr<kodo::Gui> gui = kodo::Gui::Init();
   while (!gui->Close()) {
-    gui->Render();
+    gui->Begin();
+
+    ImGui::NewFrame();
+    if (controller) {
+      kodo::OpenEditor(*controller, gui->GetHandle());
+    }
+    gui->RenderCore();
+    ImGui::Render();
+    gui->End();
   }
 }
