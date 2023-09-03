@@ -62,6 +62,7 @@ cc_binary(
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/strings:str_format",
         "@portaudio//:portaudio",
+        "@vst3sdk//:public_sdk",
     ],
 )
 

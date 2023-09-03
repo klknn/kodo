@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <cstring>
 #include <memory>
 #include <vector>
 
@@ -29,6 +30,14 @@
 #include <GLFW/glfw3.h>  // Will drag system OpenGL headers
 #include <GLFW/glfw3native.h>
 
+#ifdef __linux__
+#include <X11/X.h>
+#include <X11/Xatom.h>
+#include <X11/Xlib.h>
+constexpr unsigned int XEMBED_VERSION = 0;
+constexpr unsigned int XEMBED_MAPPED = 1 << 0;
+#endif
+
 namespace kodo {
 
 namespace {
@@ -40,12 +49,30 @@ void glfw_error_callback(int error, const char* description) {
 }  // namespace
 
 void* Gui::GetHandle() {
-#ifdef _WIN32
+#if defined _WIN32
   return (void*)glfwGetWin32Window(window_);
 #elif defined __APPLE__
   return (void*)glfwGetCocoaWindow(window_);
 #elif defined __linux__
-  return (void*)glfwGetX11Window(window_);
+  Display* display = glfwGetX11Display();
+  Window window = glfwGetX11Window(window_);
+
+  // TODO(klknn): Enable xembed. Check GTK3 later.
+  Atom xembed_info = XInternAtom(display, "_XEMBED_INFO", false);
+  long data[] = {XEMBED_VERSION, XEMBED_MAPPED};
+  XChangeProperty(display, window, xembed_info, XA_CARDINAL, 32,
+                  PropModeReplace, (unsigned char*)data, 2);
+
+  XEvent ev;
+  std::memset(&ev, 0, sizeof(ev));
+  ev.xclient.type = ClientMessage;
+  ev.xclient.window = window;
+  ev.xclient.message_type = XInternAtom(display, "_XEMBED", false);
+  ev.xclient.format = 32;
+  ev.xclient.data.l[0] = CurrentTime;
+  ev.xclient.data.l[1] = 1;  // activate;
+
+  return (void*)window;
 #else
 #error "Not implemented GetHandle() in this platform.";
 #endif

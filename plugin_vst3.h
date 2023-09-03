@@ -3,24 +3,29 @@
 #include <memory>
 #include <string_view>
 
+#include "absl/status/status.h"
 #include "absl/status/statusor.h"
-#include "pluginterfaces/vst/ivsteditcontroller.h"
-#include "public.sdk/source/vst/hosting/module.h"
 
 namespace kodo {
 
-// Tests plugin for debugging.
-absl::StatusOr<VST3::Hosting::Module::Ptr> LoadVst3Plugin(
-    std::string_view path);
+// absl::StatusOr<ControllerPtr> GetEditController(
+//     VST3::Hosting::Module::Ptr module);
 
-using ControllerDel = void (*)(Steinberg::Vst::IEditController*);
-using ControllerPtr =
-    std::unique_ptr<Steinberg::Vst::IEditController, ControllerDel>;
+// absl::Status OpenEditor(Steinberg::Vst::IEditController& controller,
+//                         void* handle);
 
-absl::StatusOr<ControllerPtr> GetEditController(
-    VST3::Hosting::Module::Ptr module);
+class Plugin {
+ public:
+  virtual ~Plugin() {}
+  virtual absl::Status Render(void* window_handle) = 0;
+};
 
-absl::Status OpenEditor(Steinberg::Vst::IEditController& controller,
-                        void* handle);
+class PluginModule {
+ public:
+  virtual ~PluginModule() {}
+  virtual absl::StatusOr<std::unique_ptr<Plugin>> Load(int index) = 0;
+};
+
+absl::StatusOr<std::unique_ptr<PluginModule>> Vst3Module(std::string_view path);
 
 }  // namespace kodo

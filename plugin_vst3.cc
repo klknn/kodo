@@ -2,10 +2,12 @@
 
 #include <stdint.h>
 
+#include <algorithm>
 #include <iomanip>
 #include <memory>
 #include <string>
 #include <string_view>
+#include <type_traits>
 
 #include "absl/cleanup/cleanup.h"
 #include "absl/log/log.h"
@@ -38,15 +40,54 @@ static void* contentView(void* nswindow) {
   return (void*)objc_msgSend((id)nswindow, sel);
 }
 
-#else
-
-static void* contentView(void*) { return nullptr; }
-
 #endif
 
 namespace kodo {
 
 namespace {
+
+struct FRelease {
+  void operator()(Steinberg::FUnknown* p) { p->release(); }
+};
+
+template <class T>
+concept FChild = std::is_base_of_v<Steinberg::FUnknown, T>;
+
+template <FChild T>
+using FUniquePtr = std::unique_ptr<T, FRelease>;
+
+absl::StatusCode TResultToStatus(Steinberg::tresult code) {
+  switch (code) {
+    case Steinberg::kNoInterface:
+      return absl::StatusCode::kNotFound;
+    case Steinberg::kResultOk:
+      return absl::StatusCode::kOk;
+    case Steinberg::kResultFalse:
+      return absl::StatusCode::kUnknown;
+    case Steinberg::kInvalidArgument:
+      return absl::StatusCode::kInvalidArgument;
+    case Steinberg::kNotImplemented:
+      return absl::StatusCode::kUnimplemented;
+    case Steinberg::kInternalError:
+      return absl::StatusCode::kInternal;
+    case Steinberg::kNotInitialized:
+      return absl::StatusCode::kFailedPrecondition;
+    case Steinberg::kOutOfMemory:
+      return absl::StatusCode::kResourceExhausted;
+    default:
+      return absl::StatusCode::kUnknown;
+  }
+}
+
+template <FChild T>
+absl::StatusOr<FUniquePtr<T>> Query(Steinberg::FUnknown* p) {
+  T* ret;
+  Steinberg::tresult res = p->queryInterface(T::iid, &ret);
+  if (res == Steinberg::kResultOk) {
+    return FUnknownPtr<T>(ret);
+  }
+  return absl::Status(TResultToStatus(res), "Failed to queryInterface.");
+}
 
 class ImPlugFrame : public Steinberg::IPlugFrame {
  public:
@@ -124,6 +165,7 @@ class ImPlugFrame : public Steinberg::IPlugFrame {
  private:
   // Attaches the plug-in editor with platform-specific window handle.
   absl::Status Attach(void* handle) {
+#if defined _WIN32
     // Win32.
     if (plug_view_->isPlatformTypeSupported(Steinberg::kPlatformTypeHWND)) {
       LOG_FIRST_N(INFO, 1) << "Try HWND platform";
@@ -134,6 +176,7 @@ class ImPlugFrame : public Steinberg::IPlugFrame {
       }
       return absl::OkStatus();
     }
+#elif defined __APPLE__
     // OSX Cocoa.
     if (plug_view_->isPlatformTypeSupported(Steinberg::kPlatformTypeNSView) ==
         Steinberg::kResultOk) {
@@ -156,6 +199,7 @@ class ImPlugFrame : public Steinberg::IPlugFrame {
       }
       return absl::OkStatus();
     }
+#elif defined __linux__
     // Linux X11.
     if (plug_view_->isPlatformTypeSupported(
             Steinberg::kPlatformTypeX11EmbedWindowID) == Steinberg::kResultOk) {
@@ -168,6 +212,9 @@ class ImPlugFrame : public Steinberg::IPlugFrame {
       }
       return absl::OkStatus();
     }
+#else
+#error "Unknown platform."
+#endif
     return absl::UnimplementedError("Unsupported platform.");
   }
 
@@ -200,66 +247,101 @@ class ImPlugFrame : public Steinberg::IPlugFrame {
 //   return result;
 // }
 
-void ReleaseController(Steinberg::Vst::IEditController* p) { p->release(); }
+class Vst3Plugin : public Plugin {
+ public:
+  static absl::StatusOr<std::unique_ptr<Vst3Plugin>> Init(
+      VST3::Hosting::Module::Ptr module, int index) {
+    std::unique_ptr<Vst3Plugin> ret(new Vst3Plugin);
+    ret->module_ = module;
 
-}  // namespace
+    VST3::Hosting::PluginFactory factory = module->getFactory();
+    LOG(INFO) << "Found #class=" << factory.classCount();
+    if (factory.classCount() <= index) {
+      return absl::NotFoundError(absl::StrCat(
+          "index=", index,
+          " is out-of-range to class count=", factory.classCount()));
+    }
 
-absl::Status OpenEditor(Steinberg::Vst::IEditController& controller,
-                        void* handle) {
-  Steinberg::IPtr<Steinberg::IPlugView> view = Steinberg::owned(
-      controller.createView(Steinberg::Vst::ViewType::kEditor));
-  if (!view) {
-    return absl::FailedPreconditionError("Could not create window.");
-  }
+    ret->factory_ = factory.get();
 
-  ImPlugFrame frame(view);
-  return frame.Render(handle);
-}
+    // if (auto f = Query<Steinberg::IPluginFactory3>(factory.get()); f.ok()) {
+    //   f.value()->getClassInfoUnicode(index, )
+    // }
 
-absl::StatusOr<ControllerPtr> GetEditController(
-    VST3::Hosting::Module::Ptr module) {
-  auto factory = module->getFactory();
-  LOG(INFO) << "Found #class=" << factory.classCount();
-
-  Steinberg::IPtr<Steinberg::Vst::PlugProvider> provider;
-  for (auto& classInfo : factory.classInfos()) {
-    LOG(INFO) << "Class: " << classInfo.name();
-    provider = Steinberg::owned(
-        new Steinberg::Vst::PlugProvider(factory, classInfo, true));
+    ret->class_info_ = factory.classInfos()[index];
+    LOG(INFO) << "Class: " << ret->class_info_.name();
+    Steinberg::IPtr<Steinberg::Vst::PlugProvider> provider = Steinberg::owned(
+        new Steinberg::Vst::PlugProvider(factory, ret->class_info_, true));
+    if (!provider) {
+      return absl::NotFoundError("Could not create plugin provider.");
+    }
     if (!provider->initialize()) {
       return absl::FailedPreconditionError("PlugProvider::initialize() failed");
     }
-    break;
-  }
-  if (!provider) {
-    return absl::NotFoundError("No VST3 Audio Module Class found");
-  }
+    Steinberg::Vst::IEditController* controller = provider->getController();
+    if (!controller) {
+      return absl::NotFoundError(
+          "No EditController found (needed for allowing editor)");
+    }
+    LOG(INFO) << "#Params=" << controller->getParameterCount();
+    ret->controller_ = controller;
 
-  Steinberg::Vst::IEditController* controller = provider->getController();
-  if (!controller) {
-    return absl::NotFoundError(
-        "No EditController found (needed for allowing editor)");
-  }
-  LOG(INFO) << "#Params=" << controller->getParameterCount();
-
-  return ControllerPtr(controller, &ReleaseController);
-}
-
-// https://www.utsbox.com/?p=3006
-absl::StatusOr<std::shared_ptr<Module>> LoadVst3Plugin(std::string_view path) {
-  std::string error;
-  std::shared_ptr<Module> module =
-      VST3::Hosting::Module::create(std::string{path}, error);
-  if (!module) {
-    return absl::NotFoundError(absl::StrCat(error, " in file ", path));
+    return ret;
   }
 
-  LOG(INFO) << "Loaded module: " << std::quoted(module->getName())
-            << " from path " << path;
-  // if (absl::Status status = ShowEditor(*controller); !status.ok()) {
-  //   return status;
-  // }
-  return module;
+  ~Vst3Plugin() override { controller_->release(); }
+
+  absl::Status Render(void* window_handle) override {
+    Steinberg::IPtr<Steinberg::IPlugView> view = Steinberg::owned(
+        controller_->createView(Steinberg::Vst::ViewType::kEditor));
+    if (!view) {
+      return absl::FailedPreconditionError("Could not create window.");
+    }
+    ImPlugFrame frame(view);
+    return frame.Render(window_handle);
+  }
+
+ private:
+  Vst3Plugin() {}
+
+  Steinberg::IPtr<Steinberg::IPluginFactory> factory_;
+  VST3::Hosting::ClassInfo class_info_;
+  Steinberg::Vst::IEditController* controller_;
+  VST3::Hosting::Module::Ptr module_;  // Not to exceed lifetime beyond module.
+};
+
+class Vst3PluginModule : public PluginModule {
+ public:
+  static absl::StatusOr<std::unique_ptr<Vst3PluginModule>> Init(
+      std::string_view path) {
+    std::unique_ptr<Vst3PluginModule> ret(new Vst3PluginModule);
+
+    std::string error;
+    ret->module_ = VST3::Hosting::Module::create(std::string{path}, error);
+    if (ret->module_ == nullptr) {
+      return absl::NotFoundError(absl::StrCat(error, " in file ", path));
+    }
+
+    LOG(INFO) << "Loaded module: " << std::quoted(ret->module_->getName())
+              << " from path " << path;
+    return ret;
+  }
+
+  absl::StatusOr<std::unique_ptr<Plugin>> Load(int index) override {
+    return Vst3Plugin::Init(module_, index);
+  }
+
+ private:
+  Vst3PluginModule() {}  // Use Init().
+
+  VST3::Hosting::Module::Ptr module_;
+};
+
+}  // namespace
+
+absl::StatusOr<std::unique_ptr<PluginModule>> Vst3Module(
+    std::string_view path) {
+  return Vst3PluginModule::Init(path);
 }
 
 }  // namespace kodo

@@ -15,6 +15,8 @@
 #include "kodo.pb.h"
 #include "plugin_vst3.h"
 #include "portaudio.h"
+#include "public.sdk/source/vst/hosting/hostclasses.h"
+#include "public.sdk/source/vst/hosting/plugprovider.h"
 
 ABSL_FLAG(bool, gui, true, "Will launch GUI.");
 ABSL_FLAG(std::string, test_vst3, "", "Test the given VST3 on launch.");
@@ -90,17 +92,20 @@ int main(int argc, char** argv) {
     LOG(ERROR) << status;
   }
 
-  kodo::ControllerPtr controller(nullptr, nullptr);
-  auto vst3_module = kodo::LoadVst3Plugin(absl::GetFlag(FLAGS_test_vst3));
-  if (vst3_module.ok()) {
-    auto controller_or = kodo::GetEditController(*vst3_module);
-    if (controller_or.ok()) {
-      controller = std::move(*controller_or);
-    } else {
-      LOG(ERROR) << controller_or.status();
-    }
+  // Load test plugin.
+  // VST3::Hosting::
+  Steinberg::Vst::HostApplication vst_host_app;
+  Steinberg::Vst::PluginContextFactory::instance().setPluginContext(
+      &vst_host_app);
+
+  std::unique_ptr<kodo::Plugin> test_plugin;
+  auto module = kodo::Vst3Module(absl::GetFlag(FLAGS_test_vst3));
+  if (module.ok()) {
+    auto plugin = module.value()->Load(0);
+    QCHECK_OK(plugin);
+    test_plugin = std::move(*plugin);
   } else {
-    LOG(ERROR) << vst3_module.status();
+    LOG(ERROR) << module.status();
   }
 
   if (!absl::GetFlag(FLAGS_gui)) {
@@ -114,8 +119,8 @@ int main(int argc, char** argv) {
     gui->Begin();
 
     ImGui::NewFrame();
-    if (controller) {
-      QCHECK_OK(kodo::OpenEditor(*controller, gui->GetHandle()));
+    if (test_plugin) {
+      QCHECK_OK(test_plugin->Render(gui->GetHandle()));
     }
     gui->RenderCore();
     ImGui::Render();
