@@ -55,13 +55,13 @@ class ImPlugFrame : public Steinberg::IPlugFrame {
 
     Steinberg::ViewRect curr_rect;
     plug_view_->getSize(&curr_rect);
-    ImVec2 curr_size, curr_pos;
+    ImVec2 curr_size;
     curr_size.x = curr_rect.getWidth();
     curr_size.y = curr_rect.getHeight();
+    ImGui::SetNextWindowContentSize(curr_size);
+    // ImVec2 curr_pos;
     // curr_pos.x = curr_rect.left;
     // curr_pos.y = curr_rect.top;
-
-    ImGui::SetNextWindowContentSize(curr_size);
     // ImGui::SetNextWindowPos(curr_pos, 0, {0.5, 0.5});
     ImGui::Begin("PlugFrame");
 
@@ -171,33 +171,14 @@ class ImPlugFrame : public Steinberg::IPlugFrame {
   Steinberg::IPtr<Steinberg::IPlugView> plug_view_;
 };
 
-ImRect ViewRectToImRect(Steinberg::ViewRect r) {
-  ImRect result{};
-  result.Min.x = r.left;
-  result.Min.y = r.top;
-  result.Max.x = r.right;
-  result.Max.y = r.bottom;
-  return result;
-}
-
-absl::Status ShowEditor(Steinberg::Vst::IEditController& contoller) {
-  Steinberg::IPtr<Steinberg::IPlugView> view =
-      Steinberg::owned(contoller.createView(Steinberg::Vst::ViewType::kEditor));
-  if (!view) {
-    return absl::FailedPreconditionError("Could not create window.");
-  }
-
-  Steinberg::ViewRect size;
-  if (view->getSize(&size) != Steinberg::kResultOk) {
-    return absl::FailedPreconditionError("Could not get view size.");
-  }
-  ImRect rect = ViewRectToImRect(size);
-
-  ImPlugFrame frame(view);
-  view->setFrame(&frame);
-
-  return absl::OkStatus();
-}
+// ImRect ViewRectToImRect(Steinberg::ViewRect r) {
+//   ImRect result{};
+//   result.Min.x = r.left;
+//   result.Min.y = r.top;
+//   result.Max.x = r.right;
+//   result.Max.y = r.bottom;
+//   return result;
+// }
 
 void ReleaseController(Steinberg::Vst::IEditController* p) { p->release(); }
 
