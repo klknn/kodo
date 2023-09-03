@@ -17,9 +17,9 @@
 #include "ImCurveEdit.h"
 #include "ImSequencer.h"
 #include "absl/log/log.h"
+#include "backends/imgui_impl_glfw.h"
+#include "backends/imgui_impl_opengl3.h"
 #include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h"
 #include "imgui_internal.h"
 
 #define GL_SILENCE_DEPRECATION
@@ -44,17 +44,20 @@ void* Gui::GetHandle() {
   return (void*)glfwGetWin32Window(window_);
 #elif defined __APPLE__
   return (void*)glfwGetCocoaWindow(window_);
+#elif defined __linux__
+  return (void*)glfwGetX11Window(window_);
 #else
-  LOG(QFATAL) << "Not implemented GetHandle() in this platform.";
-  return nullptr;
+#error "Not implemented GetHandle() in this platform.";
 #endif
 }
 
 std::unique_ptr<Gui> Gui::Init() {
   glfwSetErrorCallback(glfw_error_callback);
-  if (!glfwInit()) return nullptr;
+  if (!glfwInit()) {
+    return nullptr;
+  }
 
-    // Decide GL+GLSL versions
+  // Decide GL+GLSL versions
 #if defined(IMGUI_IMPL_OPENGL_ES2)
   // GL ES 2.0 + GLSL 100
   const char* glsl_version = "#version 100";

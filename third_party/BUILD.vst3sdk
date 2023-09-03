@@ -1,4 +1,12 @@
 # -*- mode:bazel-build -*-
+COPTS = [
+    "-Wno-deprecated",
+    "-Wno-format",
+    "-Wno-parentheses",
+    "-Wno-class-memaccess",
+    "-Wno-multichar",
+    "-Wno-unused",
+]
 
 cc_library(
     name = "base",
@@ -12,6 +20,7 @@ cc_library(
     deps = [
         ":pluginterfaces",
     ],
+    copts = COPTS,
     visibility = ["//visibility:public"],
 )
 
@@ -19,6 +28,7 @@ cc_library(
     name = "pluginterfaces",
     hdrs = glob(["pluginterfaces/**/*.h"]),
     srcs = glob(["pluginterfaces/**/*.cpp"]),
+    copts = COPTS,
     visibility = ["//visibility:public"],
     linkopts = select({
         "@platforms//os:windows": ["ole32.lib"],  # For COM in funknown.h.
@@ -31,6 +41,7 @@ COMMON_SRCS = glob(
     include = ["public.sdk/source/**/*.cpp"],
     exclude = [
         "public.sdk/source/vst3stdsdk.cpp",  # only includes cpp.
+        "public.sdk/source/vst/basewrapper/**/*.cpp",  # no linux support.
         "public.sdk/source/vst/basewrapper/basewrapper.sdk.cpp",  # only includes cpp.
         "public.sdk/source/vst/aaxwrapper/*.cpp",
         "public.sdk/source/vst/auwrapper/usediids.cpp", # Not to redefine iids in source/vst/vstinitiids.cpp.
@@ -71,6 +82,7 @@ cc_library(
         "@platforms//os:linux": ["public.sdk/source/vst/hosting/module_linux.cpp"],
         "@platforms//os:osx": [],
     }),
+    copts = COPTS,
     deps = [
         ":base",
         ":pluginterfaces",

@@ -134,7 +134,7 @@ cc_library(
     defines = select({
         "@platforms//os:windows": ["GLFW_EXPOSE_NATIVE_WIN32"],
         "@platforms//os:osx": ["GLFW_EXPOSE_NATIVE_COCOA"],
-        "//conditions:default": [],
+        "//conditions:default": ["GLFW_EXPOSE_NATIVE_X11"],
     }),
     strip_include_prefix = "include",
     visibility = ["//visibility:public"],

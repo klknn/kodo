@@ -145,8 +145,13 @@ class ImPlugFrame : public Steinberg::IPlugFrame {
             "cannot call attached(handle, HIView).");
       }
     }
+#elif defined __linux__
+    if (plug_view_->isPlatformTypeSupported(
+            Steinberg::kPlatformTypeX11EmbedWindowID) == Steinberg::kResultOk) {
+      LOG_FIRST_N(INFO, 1) << "X11 platform";
+    }
 #else
-    // #error "Unknown platform."
+#error "Unknown platform."
 #endif
     return absl::UnimplementedError("Unsupported platform.");
   }
