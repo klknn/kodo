@@ -1,6 +1,5 @@
 #include "plugin_vst3.h"
 
-#include <ocidl.h>
 #include <stdint.h>
 
 #include <iomanip>
@@ -21,6 +20,26 @@
 
 using ::VST3::Hosting::Module;
 
+#ifdef __APPLE__
+
+#include <objc/objc.h>
+
+extern "C" {
+// Sends a message with a simple return value to an instance of a class.
+// https://developer.apple.com/documentation/objectivec/1456712-objc_msgsend/
+id objc_msgSend(id, SEL, ...);
+}
+
+// The window’s content view, the highest accessible view object in the window’s
+// view hierarchy.
+// https://developer.apple.com/documentation/appkit/nswindow/1419160-contentview?language=objc
+static void* contentView(void* nswindow) {
+  SEL sel = sel_registerName("contentView:");
+  return (void*)objc_msgSend((id)nswindow, sel);
+}
+
+#endif
+
 namespace kodo {
 
 namespace {
@@ -30,7 +49,7 @@ class ImPlugFrame : public Steinberg::IPlugFrame {
   explicit ImPlugFrame(const Steinberg::IPtr<Steinberg::IPlugView>& plug_view)
       : plug_view_(plug_view) {}
 
-  absl::Status Render(void* hwnd) {
+  absl::Status Render(void* handle) {
     // ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
     // absl::Cleanup pop_style = []() { ImGui::PopStyleVar(); };
 
@@ -61,12 +80,7 @@ class ImPlugFrame : public Steinberg::IPlugFrame {
       return absl::InvalidArgumentError("cannot call setFrame(this).");
     }
 
-    if (plug_view_->attached(hwnd, Steinberg::kPlatformTypeHWND) !=
-        Steinberg::kResultOk) {
-      return absl::InvalidArgumentError("cannot call attached(handle, HWND).");
-    }
-    // need more lines for non-windows env.
-    // https://github.com/hotwatermorning/Vst3HostDemo/blob/22ab87c3cf19992d7ef852e24b5900762c94c7f9/Vst3HostDemo/plugin/vst3/Vst3PluginImpl.cpp#L414
+    Attach(handle);
 
     // ImVec2 min = ImGui::GetCursorPos();
     // ImVec2 max = ImGui::GetContentRegionMax();
@@ -102,6 +116,39 @@ class ImPlugFrame : public Steinberg::IPlugFrame {
   }
 
  private:
+  // Attaches the plug-in editor with platform-specific window handle.
+  absl::Status Attach(void* handle) {
+    // Based on
+    // https://github.com/hotwatermorning/Vst3HostDemo/blob/22ab87c3cf19992d7ef852e24b5900762c94c7f9/Vst3HostDemo/plugin/vst3/Vst3PluginImpl.cpp#L414
+#ifdef _WIN32
+    if (plug_view_->attached(hwnd, Steinberg::kPlatformTypeHWND) !=
+        Steinberg::kResultOk) {
+      return absl::InvalidArgumentError("cannot call attached(handle, HWND).");
+    }
+#elif defined __APPLE__
+    if (plug_view_->isPlatformTypeSupported(Steinberg::kPlatformTypeNSView) ==
+        Steinberg::kResultOk) {
+      if (plug_view_->attached(contentView(handle),
+                               Steinberg::kPlatformTypeNSView) !=
+          Steinberg::kResultOk) {
+        return absl::InvalidArgumentError(
+            "cannot call attached(handle, NSView).");
+      }
+    }
+    if (plug_view_->isPlatformTypeSupported(Steinberg::kPlatformTypeHIView) ==
+        Steinberg::kResultOk) {
+      if (plug_view_->attached(handle, Steinberg::kPlatformTypeHIView) !=
+          Steinberg::kResultOk) {
+        return absl::InvalidArgumentError(
+            "cannot call attached(handle, HIView).");
+      }
+    }
+#else
+    // #error "Unknown platform."
+#endif
+    return absl::UnimplementedError("Unsupported platform.");
+  }
+
   Steinberg::tresult PLUGIN_API queryInterface(const Steinberg::TUID _iid,
                                                void** obj) override {
     if (Steinberg::FUnknownPrivate::iidEqual(_iid,

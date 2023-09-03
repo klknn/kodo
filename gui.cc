@@ -27,7 +27,6 @@
 #include <GLES2/gl2.h>
 #endif
 #include <GLFW/glfw3.h>  // Will drag system OpenGL headers
-#define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 
 namespace kodo {
@@ -43,6 +42,8 @@ void glfw_error_callback(int error, const char* description) {
 void* Gui::GetHandle() {
 #ifdef _WIN32
   return (void*)glfwGetWin32Window(window_);
+#elif defined __APPLE__
+  return (void*)glfwGetCocoaWindow(window_);
 #else
   LOG(QFATAL) << "Not implemented GetHandle() in this platform.";
   return nullptr;

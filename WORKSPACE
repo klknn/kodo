@@ -82,21 +82,21 @@ http_archive(
     sha256 = "4d025083cc4a3dd1f91ab9b9ba4f5807193823e565a5bcf4be202669d9911ea6",
 )
 
-# VST3 SDK (3.7.8).
+# VST3 SDK (3.7.8). Pulling git_repository is slower than http_archive.
 git_repository(
-    name = "vst3sdk",
+    name = "git_vst3sdk",
     tag = "v3.7.8_build_34",
     remote = "https://github.com/steinbergmedia/vst3sdk",
     recursive_init_submodules = True,
     build_file = "//third_party:BUILD.vst3sdk",
 )
-# For debugging BUILD.vst3sdk.
-# new_local_repository(
-#     name = "vst3sdk",
-#     path = "C:/repos/vst3sdk",
-#     build_file = "//third_party:BUILD.vst3sdk",
-# )
-
+http_archive(
+    name = "vst3sdk",
+    url = "https://download.steinberg.net/sdk_downloads/vst-sdk_3.7.8_build-34_2023-05-15.zip",
+    strip_prefix = "VST_SDK/vst3sdk",
+    sha256 = "58b6fe5e93c5c388ee4b8e6bcf606fa62c55b86e9dcbef7b4a6ef04c96eeac73",
+    build_file = "//third_party:BUILD.vst3sdk",
+)
 
 # Hedron's Compile Commands Extractor for Bazel
 # https://github.com/hedronvision/bazel-compile-commands-extractor

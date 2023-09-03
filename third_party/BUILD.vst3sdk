@@ -4,6 +4,11 @@ cc_library(
     name = "base",
     hdrs = glob(["base/**/*.h"]),
     srcs = glob(["base/**/*.cpp"]),
+    defines = select({
+        "@platforms//os:windows": ["STMG_WINDOWS=1"],
+        "@platforms//os:osx": ["STMG_PTHREADS=1"],
+        "@platforms//os:linux": ["STMG_PTHREADS=1"],
+    }),
     deps = [
         ":pluginterfaces",
     ],
@@ -38,6 +43,22 @@ COMMON_SRCS = glob(
     ]
 )
 
+objc_library(
+    name = "public_sdk_mac",
+    hdrs = glob(
+        ["public.sdk/source/**/*.h"],
+    ),
+    copts = ["-ObjC++","-std=c++20"],
+    srcs = [
+        "public.sdk/source/vst/hosting/module_mac.mm",
+        "public.sdk/source/common/threadchecker_mac.mm"
+    ],
+    linkopts = ["-framework Cocoa", "-framework CoreFoundation"],
+    deps = [
+        ":pluginterfaces",
+    ],
+)
+
 cc_library(
     name = "public_sdk",
     # For source/vst/vstsinglecomponenteffect.cpp
@@ -48,11 +69,15 @@ cc_library(
     srcs = COMMON_SRCS + select({
         "@platforms//os:windows": ["public.sdk/source/vst/hosting/module_win32.cpp"],
         "@platforms//os:linux": ["public.sdk/source/vst/hosting/module_linux.cpp"],
-        "@platforms//os:osx": ["public.sdk/source/vst/hosting/module_mac.mm"],
+        "@platforms//os:osx": [],
     }),
     deps = [
         ":base",
         ":pluginterfaces",
-    ],
+    ] + select({
+        "@platforms//os:windows": [],
+        "@platforms//os:linux": [],
+        "@platforms//os:osx": [":public_sdk_mac"],
+    }),
     visibility = ["//visibility:public"],
 )

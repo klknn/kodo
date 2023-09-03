@@ -1,3 +1,4 @@
+# -*- mode:bazel-build -*-
 # See also https://github.com/glfw/glfw/blob/3.3.8/src/CMakeLists.txt
 WIN32_DEFINES = [
     "_GLFW_WIN32",
@@ -129,6 +130,11 @@ cc_library(
     deps = select({
         "@platforms//os:osx": [":glfw_cocoa"],
         "//conditions:default": [":glfw_src"],
+    }),
+    defines = select({
+        "@platforms//os:windows": ["GLFW_EXPOSE_NATIVE_WIN32"],
+        "@platforms//os:osx": ["GLFW_EXPOSE_NATIVE_COCOA"],
+        "//conditions:default": [],
     }),
     strip_include_prefix = "include",
     visibility = ["//visibility:public"],

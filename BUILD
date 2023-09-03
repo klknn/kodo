@@ -31,6 +31,7 @@ cc_library(
     hdrs = ["plugin_vst3.h"],
     srcs = ["plugin_vst3.cc"],
     deps = [
+        ":gui",
         "@imgui//:core",
         "@com_google_absl//absl/cleanup",
         "@com_google_absl//absl/status",
