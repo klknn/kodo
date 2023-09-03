@@ -38,6 +38,10 @@ static void* contentView(void* nswindow) {
   return (void*)objc_msgSend((id)nswindow, sel);
 }
 
+#else
+
+static void* contentView(void*) { return nullptr; }
+
 #endif
 
 namespace kodo {
@@ -120,18 +124,17 @@ class ImPlugFrame : public Steinberg::IPlugFrame {
  private:
   // Attaches the plug-in editor with platform-specific window handle.
   absl::Status Attach(void* handle) {
-    // Based on
-    // https://github.com/hotwatermorning/Vst3HostDemo/blob/22ab87c3cf19992d7ef852e24b5900762c94c7f9/Vst3HostDemo/plugin/vst3/Vst3PluginImpl.cpp#L414
-#ifdef _WIN32
-    if (plug_view_->isPlatormSupported(Steinberg::kPlatformTypeHWND)) {
-      LOG_FIRST_N(INFO, 1) << "NSView platform";
+    // Win32.
+    if (plug_view_->isPlatformTypeSupported(Steinberg::kPlatformTypeHWND)) {
+      LOG_FIRST_N(INFO, 1) << "Try HWND platform";
       if (plug_view_->attached(handle, Steinberg::kPlatformTypeHWND) !=
           Steinberg::kResultOk) {
         return absl::InvalidArgumentError(
             "cannot call attached(handle, HWND).");
       }
+      return absl::OkStatus();
     }
-#elif defined __APPLE__
+    // OSX Cocoa.
     if (plug_view_->isPlatformTypeSupported(Steinberg::kPlatformTypeNSView) ==
         Steinberg::kResultOk) {
       LOG_FIRST_N(INFO, 1) << "NSView platform";
@@ -141,6 +144,7 @@ class ImPlugFrame : public Steinberg::IPlugFrame {
         return absl::InvalidArgumentError(
             "cannot call attached(handle, NSView).");
       }
+      return absl::OkStatus();
     }
     if (plug_view_->isPlatformTypeSupported(Steinberg::kPlatformTypeHIView) ==
         Steinberg::kResultOk) {
@@ -150,15 +154,20 @@ class ImPlugFrame : public Steinberg::IPlugFrame {
         return absl::InvalidArgumentError(
             "cannot call attached(handle, HIView).");
       }
+      return absl::OkStatus();
     }
-#elif defined __linux__
+    // Linux X11.
     if (plug_view_->isPlatformTypeSupported(
             Steinberg::kPlatformTypeX11EmbedWindowID) == Steinberg::kResultOk) {
       LOG_FIRST_N(INFO, 1) << "X11 platform";
+      if (plug_view_->attached(handle,
+                               Steinberg::kPlatformTypeX11EmbedWindowID) !=
+          Steinberg::kResultOk) {
+        return absl::InvalidArgumentError(
+            "cannot call attached(handle, X11EmbedWindow).");
+      }
+      return absl::OkStatus();
     }
-#else
-#error "Unknown platform."
-#endif
     return absl::UnimplementedError("Unsupported platform.");
   }
 
