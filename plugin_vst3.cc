@@ -123,13 +123,18 @@ class ImPlugFrame : public Steinberg::IPlugFrame {
     // Based on
     // https://github.com/hotwatermorning/Vst3HostDemo/blob/22ab87c3cf19992d7ef852e24b5900762c94c7f9/Vst3HostDemo/plugin/vst3/Vst3PluginImpl.cpp#L414
 #ifdef _WIN32
-    if (plug_view_->attached(handle, Steinberg::kPlatformTypeHWND) !=
-        Steinberg::kResultOk) {
-      return absl::InvalidArgumentError("cannot call attached(handle, HWND).");
+    if (plug_view_->isPlatormSupported(Steinberg::kPlatformTypeHWND)) {
+      LOG_FIRST_N(INFO, 1) << "NSView platform";
+      if (plug_view_->attached(handle, Steinberg::kPlatformTypeHWND) !=
+          Steinberg::kResultOk) {
+        return absl::InvalidArgumentError(
+            "cannot call attached(handle, HWND).");
+      }
     }
 #elif defined __APPLE__
     if (plug_view_->isPlatformTypeSupported(Steinberg::kPlatformTypeNSView) ==
         Steinberg::kResultOk) {
+      LOG_FIRST_N(INFO, 1) << "NSView platform";
       if (plug_view_->attached(contentView(handle),
                                Steinberg::kPlatformTypeNSView) !=
           Steinberg::kResultOk) {
@@ -139,6 +144,7 @@ class ImPlugFrame : public Steinberg::IPlugFrame {
     }
     if (plug_view_->isPlatformTypeSupported(Steinberg::kPlatformTypeHIView) ==
         Steinberg::kResultOk) {
+      LOG_FIRST_N(INFO, 1) << "HIView platform";
       if (plug_view_->attached(handle, Steinberg::kPlatformTypeHIView) !=
           Steinberg::kResultOk) {
         return absl::InvalidArgumentError(

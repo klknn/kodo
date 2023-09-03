@@ -1,12 +1,15 @@
 # -*- mode:bazel-build -*-
-COPTS = [
-    "-Wno-deprecated",
-    "-Wno-format",
-    "-Wno-parentheses",
-    "-Wno-class-memaccess",
-    "-Wno-multichar",
-    "-Wno-unused",
-]
+COPTS = select({
+    "@platforms//os:windows": [],
+    "//conditions:default": [
+        "-Wno-deprecated",
+        "-Wno-format",
+        "-Wno-parentheses",
+        "-Wno-class-memaccess",
+        "-Wno-multichar",
+        "-Wno-unused",
+    ],
+})
 
 cc_library(
     name = "base",
