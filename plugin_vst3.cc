@@ -121,7 +121,7 @@ class ImPlugFrame : public Steinberg::IPlugFrame {
     // Based on
     // https://github.com/hotwatermorning/Vst3HostDemo/blob/22ab87c3cf19992d7ef852e24b5900762c94c7f9/Vst3HostDemo/plugin/vst3/Vst3PluginImpl.cpp#L414
 #ifdef _WIN32
-    if (plug_view_->attached(hwnd, Steinberg::kPlatformTypeHWND) !=
+    if (plug_view_->attached(handle, Steinberg::kPlatformTypeHWND) !=
         Steinberg::kResultOk) {
       return absl::InvalidArgumentError("cannot call attached(handle, HWND).");
     }
