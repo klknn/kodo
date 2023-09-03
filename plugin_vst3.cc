@@ -80,7 +80,9 @@ class ImPlugFrame : public Steinberg::IPlugFrame {
       return absl::InvalidArgumentError("cannot call setFrame(this).");
     }
 
-    Attach(handle);
+    if (absl::Status status = Attach(handle); !status.ok()) {
+      return status;
+    }
 
     // ImVec2 min = ImGui::GetCursorPos();
     // ImVec2 max = ImGui::GetContentRegionMax();
@@ -210,7 +212,7 @@ absl::Status OpenEditor(Steinberg::Vst::IEditController& controller,
   }
 
   ImPlugFrame frame(view);
-  frame.Render(handle);
+  return frame.Render(handle);
 }
 
 absl::StatusOr<ControllerPtr> GetEditController(

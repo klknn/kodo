@@ -6,6 +6,7 @@
 #include "absl/flags/declare.h"
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
+#include "absl/log/check.h"
 #include "absl/log/initialize.h"
 #include "absl/log/log.h"
 #include "absl/status/status.h"
@@ -114,7 +115,7 @@ int main(int argc, char** argv) {
 
     ImGui::NewFrame();
     if (controller) {
-      kodo::OpenEditor(*controller, gui->GetHandle());
+      QCHECK_OK(kodo::OpenEditor(*controller, gui->GetHandle()));
     }
     gui->RenderCore();
     ImGui::Render();

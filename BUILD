@@ -55,6 +55,7 @@ cc_binary(
         "@com_google_absl//absl/cleanup",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/flags:parse",
+        "@com_google_absl//absl/log:check",
         "@com_google_absl//absl/log:log",
         "@com_google_absl//absl/log:flags",
         "@com_google_absl//absl/log:initialize",
