@@ -36,7 +36,7 @@ id objc_msgSend(id, SEL, ...);
 // view hierarchy.
 // https://developer.apple.com/documentation/appkit/nswindow/1419160-contentview?language=objc
 static void* contentView(void* nswindow) {
-  SEL sel = sel_registerName("contentView:");
+  SEL sel = sel_registerName("contentView");
   return (void*)objc_msgSend((id)nswindow, sel);
 }
 
@@ -178,6 +178,16 @@ class ImPlugFrame : public Steinberg::IPlugFrame {
     }
 #elif defined __APPLE__
     // OSX Cocoa.
+    if (plug_view_->isPlatformTypeSupported(Steinberg::kPlatformTypeHIView) ==
+        Steinberg::kResultOk) {
+      LOG_FIRST_N(INFO, 1) << "HIView platform";
+      if (plug_view_->attached(handle, Steinberg::kPlatformTypeHIView) !=
+          Steinberg::kResultOk) {
+        return absl::InvalidArgumentError(
+            "cannot call attached(handle, HIView).");
+      }
+      return absl::OkStatus();
+    }
     if (plug_view_->isPlatformTypeSupported(Steinberg::kPlatformTypeNSView) ==
         Steinberg::kResultOk) {
       LOG_FIRST_N(INFO, 1) << "NSView platform";
@@ -186,16 +196,6 @@ class ImPlugFrame : public Steinberg::IPlugFrame {
           Steinberg::kResultOk) {
         return absl::InvalidArgumentError(
             "cannot call attached(handle, NSView).");
-      }
-      return absl::OkStatus();
-    }
-    if (plug_view_->isPlatformTypeSupported(Steinberg::kPlatformTypeHIView) ==
-        Steinberg::kResultOk) {
-      LOG_FIRST_N(INFO, 1) << "HIView platform";
-      if (plug_view_->attached(handle, Steinberg::kPlatformTypeHIView) !=
-          Steinberg::kResultOk) {
-        return absl::InvalidArgumentError(
-            "cannot call attached(handle, HIView).");
       }
       return absl::OkStatus();
     }
