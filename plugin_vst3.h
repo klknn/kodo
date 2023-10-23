@@ -8,12 +8,6 @@
 
 namespace kodo {
 
-// absl::StatusOr<ControllerPtr> GetEditController(
-//     VST3::Hosting::Module::Ptr module);
-
-// absl::Status OpenEditor(Steinberg::Vst::IEditController& controller,
-//                         void* handle);
-
 class Plugin {
  public:
   virtual ~Plugin() {}

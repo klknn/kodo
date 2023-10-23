@@ -36,6 +36,50 @@
 #include <X11/Xlib.h>
 constexpr unsigned int XEMBED_VERSION = 0;
 constexpr unsigned int XEMBED_MAPPED = 1 << 0;
+
+/* XEMBED messages */
+#define XEMBED_EMBEDDED_NOTIFY 0
+#define XEMBED_WINDOW_ACTIVATE 1
+#define XEMBED_WINDOW_DEACTIVATE 2
+#define XEMBED_REQUEST_FOCUS 3
+#define XEMBED_FOCUS_IN 4
+#define XEMBED_FOCUS_OUT 5
+#define XEMBED_FOCUS_NEXT 6
+#define XEMBED_FOCUS_PREV 7
+/* 8-9 were used for XEMBED_GRAB_KEY/XEMBED_UNGRAB_KEY */
+#define XEMBED_MODALITY_ON 10
+#define XEMBED_MODALITY_OFF 11
+#define XEMBED_REGISTER_ACCELERATOR 12
+#define XEMBED_UNREGISTER_ACCELERATOR 13
+#define XEMBED_ACTIVATE_ACCELERATOR 14
+
+void send_xembed_message(Display* dpy,                   /* display */
+                         Window w,                       /* receiver */
+                         Atom messageType, long message, /* message opcode */
+                         long detail,                    /* message detail */
+                         long data1,                     /* message data 1 */
+                         long data2                      /* message data 2 */
+) {
+  XEvent ev;
+  memset(&ev, 0, sizeof(ev));
+  ev.xclient.type = ClientMessage;
+  ev.xclient.window = w;
+  ev.xclient.message_type = messageType;
+  ev.xclient.format = 32;
+  ev.xclient.data.l[0] = CurrentTime;
+  ev.xclient.data.l[1] = message;
+  ev.xclient.data.l[2] = detail;
+  ev.xclient.data.l[3] = data1;
+  ev.xclient.data.l[4] = data2;
+  XSendEvent(dpy, w, False, NoEventMask, &ev);
+  XSync(dpy, False);
+}
+
+struct XEmbedInfo {
+  uint32_t version;
+  uint32_t flags;
+};
+
 #endif
 
 namespace kodo {
@@ -54,25 +98,32 @@ void* Gui::GetHandle() {
 #elif defined __APPLE__
   return (void*)glfwGetCocoaWindow(window_);
 #elif defined __linux__
-  Display* display = glfwGetX11Display();
-  Window window = glfwGetX11Window(window_);
+  // Display* display = glfwGetX11Display();
+  // Window window = glfwGetX11Window(window_);
 
-  // TODO(klknn): Enable xembed. Check GTK3 later.
-  Atom xembed_info = XInternAtom(display, "_XEMBED_INFO", false);
-  long data[] = {XEMBED_VERSION, XEMBED_MAPPED};
-  XChangeProperty(display, window, xembed_info, XA_CARDINAL, 32,
-                  PropModeReplace, (unsigned char*)data, 2);
+  // // TODO(klknn): Enable xembed. Check GTK3 later.
+  // Atom xembed_info = XInternAtom(display, "_XEMBED_INFO", false);
+  // long data[] = {XEMBED_VERSION, XEMBED_MAPPED};
+  // XChangeProperty(display, window, xembed_info, XA_CARDINAL, 32,
+  //                 PropModeReplace, (unsigned char*)data, 2);
 
-  XEvent ev;
-  std::memset(&ev, 0, sizeof(ev));
-  ev.xclient.type = ClientMessage;
-  ev.xclient.window = window;
-  ev.xclient.message_type = XInternAtom(display, "_XEMBED", false);
-  ev.xclient.format = 32;
-  ev.xclient.data.l[0] = CurrentTime;
-  ev.xclient.data.l[1] = 1;  // activate;
+  // XEvent ev;
+  // std::memset(&ev, 0, sizeof(ev));
+  // ev.xclient.type = ClientMessage;
+  // ev.xclient.window = window;
+  // ev.xclient.message_type = XInternAtom(display, "_XEMBED", false);
+  // ev.xclient.format = 32;
+  // ev.xclient.data.l[0] = CurrentTime;
+  // ev.xclient.data.l[1] = 1;  // activate;
 
-  return (void*)window;
+  // return (void*)window;
+
+  Display* xDisplay = glfwGetX11Display();
+  Atom xEmbedInfoAtom = XInternAtom(xDisplay, "_XEMBED_INFO", true);
+  if (xEmbedInfoAtom == None) {
+    LOG(QFATAL) << "_XEMBED_INFO does not exist";
+  }
+  return plugin_parent_window_;
 #else
 #error "Not implemented GetHandle() in this platform.";
 #endif
@@ -162,6 +213,28 @@ std::unique_ptr<Gui> Gui::Init() {
 
   std::unique_ptr<Gui> ret(new Gui);
   ret->window_ = window;
+
+#ifdef __linux__
+  Display* xDisplay = glfwGetX11Display();
+  int screen_num = DefaultScreen(xDisplay);
+  XVisualInfo vInfo;
+  if (!XMatchVisualInfo(xDisplay, screen_num, 24, TrueColor, &vInfo)) {
+    LOG(QFATAL) << "Cannot get XVisualInfo";
+  }
+  uint32_t winAttrMask = CWBackPixel | CWColormap | CWBorderPixel;
+  XSetWindowAttributes winAttr{};
+  Window plugin_parent_window =
+      XCreateWindow(xDisplay, glfwGetX11Window(window), 0, 0,
+                    // size.width, size.height, border_width, vInfo.depth,
+                    // TODO: pass size in init.
+                    200, 200, 1, vInfo.depth, InputOutput, CopyFromParent,
+                    winAttrMask, &winAttr);
+  XSelectInput(xDisplay, plugin_parent_window,
+               SubstructureNotifyMask | PropertyChangeMask);
+  XMapWindow(xDisplay, plugin_parent_window);
+  ret->plugin_parent_window_ = (void*)plugin_parent_window;
+#endif
+
   return ret;
 }
 

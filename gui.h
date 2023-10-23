@@ -36,6 +36,7 @@ class Gui {
   bool show_another_window_ = false;
   ImVec4 clear_color_ = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
   GLFWwindow* window_;
+  void* plugin_parent_window_;
 };
 
 }  // namespace kodo

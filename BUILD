@@ -13,6 +13,20 @@ cc_proto_library(
 )
 
 cc_library(
+    name = "window",
+    hdrs = ["window.h"],
+    srcs = select({
+        "@platforms//os:linux": ["window_linux.cc"],
+        "//conditions:default": [],
+    }),
+    deps = [
+        "@com_google_absl//absl/log:log",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+    ],
+)
+
+cc_library(
     name = "gui",
     hdrs = ["gui.h"],
     srcs = ["gui.cc"],
