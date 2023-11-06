@@ -15,7 +15,7 @@ cc_library(
     name = "base",
     hdrs = glob(["base/**/*.h"]),
     srcs = glob(["base/**/*.cpp"]),
-    defines = select({
+    defines = ["DEVELOPMENT"] + select({
         "@platforms//os:windows": ["STMG_WINDOWS=1"],
         "@platforms//os:osx": ["STMG_PTHREADS=1"],
         "@platforms//os:linux": ["STMG_PTHREADS=1"],

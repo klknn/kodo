@@ -110,3 +110,17 @@ http_archive(
 )
 load("@hedron_compile_commands//:workspace_setup.bzl", "hedron_compile_commands_setup")
 hedron_compile_commands_setup()
+
+
+new_local_repository(
+    name = "linux_system_libs",
+    # pkg-config --variable=libdir x11
+    path = "/usr/lib/x86_64-linux-gnu",
+    build_file_content = """
+cc_library(
+    name = "x11",
+    srcs = ["libX11.so"],
+    visibility = ["//visibility:public"],
+)
+""",
+)
