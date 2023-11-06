@@ -2,7 +2,7 @@
 
 !third_party/
 !editorhost/
-!editorhost/*/
+!editorhost/**/
 !BUILD
 !BUILD.*
 !WORKSPACE
