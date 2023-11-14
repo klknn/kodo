@@ -1,41 +1,3 @@
-//-----------------------------------------------------------------------------
-// Flags       : clang-format auto
-// Project     : VST SDK
-//
-// Category    : EditorHost
-// Filename    : public.sdk/samples/vst-hosting/editorhost/source/editorhost.cpp
-// Created by  : Steinberg 09.2016
-// Description : Example of opening a plug-in editor
-//
-//-----------------------------------------------------------------------------
-// LICENSE
-// (c) 2023, Steinberg Media Technologies GmbH, All Rights Reserved
-//-----------------------------------------------------------------------------
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-//   * Redistributions of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//   * Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation
-//     and/or other materials provided with the distribution.
-//   * Neither the name of the Steinberg Media Technologies nor the names of its
-//     contributors may be used to endorse or promote products derived from this
-//     software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
-//-----------------------------------------------------------------------------
-
 #include "kodo/editorhost.h"
 
 #include <cstdio>
@@ -50,26 +12,25 @@
 #include "pluginterfaces/vst/ivsteditcontroller.h"
 #include "pluginterfaces/vst/vsttypes.h"
 
-using namespace kodo;
+using namespace Steinberg;
+using namespace Steinberg::Vst;
 
-//------------------------------------------------------------------------
 namespace Steinberg {
 
-//------------------------------------------------------------------------
 inline bool operator==(const ViewRect& r1, const ViewRect& r2) {
-  return memcmp(&r1, &r2, sizeof(ViewRect)) == 0;
+  return std::memcmp(&r1, &r2, sizeof(ViewRect)) == 0;
 }
 
-//------------------------------------------------------------------------
 inline bool operator!=(const ViewRect& r1, const ViewRect& r2) {
   return !(r1 == r2);
 }
 
-namespace Vst {
-namespace EditorHost {
+}  // namespace Steinberg
 
-//------------------------------------------------------------------------
-class WindowController : public IWindowController, public IPlugFrame {
+namespace kodo {
+
+class WindowController : public IWindowController,
+                         public Steinberg::IPlugFrame {
  public:
   WindowController(const IPtr<IPlugView>& plugView);
   ~WindowController() noexcept override;
@@ -107,19 +68,19 @@ class WindowController : public IWindowController, public IPlugFrame {
   bool resizeViewRecursionGard{false};
 };
 
-//------------------------------------------------------------------------
-class ComponentHandler : public IComponentHandler {
+class ComponentHandler : public Steinberg::Vst::IComponentHandler {
  public:
-  tresult PLUGIN_API beginEdit(ParamID id) override {
+  tresult PLUGIN_API beginEdit(Steinberg::Vst::ParamID id) override {
     SMTG_DBPRT1("beginEdit called (%d)\n", id);
     return kNotImplemented;
   }
-  tresult PLUGIN_API performEdit(ParamID id,
-                                 ParamValue valueNormalized) override {
+  tresult PLUGIN_API
+  performEdit(Steinberg::Vst::ParamID id,
+              Steinberg::Vst::ParamValue valueNormalized) override {
     SMTG_DBPRT2("performEdit called (%d, %f)\n", id, valueNormalized);
     return kNotImplemented;
   }
-  tresult PLUGIN_API endEdit(ParamID id) override {
+  tresult PLUGIN_API endEdit(Steinberg::Vst::ParamID id) override {
     SMTG_DBPRT1("endEdit called (%d)\n", id);
     return kNotImplemented;
   }
@@ -141,10 +102,8 @@ class ComponentHandler : public IComponentHandler {
 
 static ComponentHandler gComponentHandler;
 
-//------------------------------------------------------------------------
 App::~App() noexcept { terminate(); }
 
-//------------------------------------------------------------------------
 void App::openEditor(const std::string& path,
                      VST3::Optional<VST3::UID> effectID, uint32 flags) {
   std::string error;
@@ -209,7 +168,6 @@ static Rect ViewRectToRect(ViewRect r) {
   return result;
 }
 
-//------------------------------------------------------------------------
 void App::createViewAndShow(IEditController* controller) {
   auto view = owned(controller->createView(ViewType::kEditor));
   if (!view) {
@@ -236,7 +194,6 @@ void App::createViewAndShow(IEditController* controller) {
   window->show();
 }
 
-//------------------------------------------------------------------------
 void App::init(const std::vector<std::string>& cmdArgs) {
   VST3::Optional<VST3::UID> uid;
   uint32 flags{};
@@ -275,7 +232,6 @@ options:
   openEditor(cmdArgs.back(), std::move(uid), flags);
 }
 
-//------------------------------------------------------------------------
 void App::terminate() {
   if (windowController) windowController->closePlugView();
   windowController.reset();
@@ -284,14 +240,11 @@ void App::terminate() {
   PluginContextFactory::instance().setPluginContext(nullptr);
 }
 
-//------------------------------------------------------------------------
 WindowController::WindowController(const IPtr<IPlugView>& plugView)
     : plugView(plugView) {}
 
-//------------------------------------------------------------------------
 WindowController::~WindowController() noexcept {}
 
-//------------------------------------------------------------------------
 void WindowController::onShow(IWindow& w) {
   SMTG_DBPRT1("onShow called (%p)\n", (void*)&w);
 
@@ -314,7 +267,6 @@ void WindowController::onShow(IWindow& w) {
   }
 }
 
-//------------------------------------------------------------------------
 void WindowController::closePlugView() {
   if (plugView) {
     plugView->setFrame(nullptr);
@@ -326,7 +278,6 @@ void WindowController::closePlugView() {
   window = nullptr;
 }
 
-//------------------------------------------------------------------------
 void WindowController::onClose(IWindow& w) {
   SMTG_DBPRT1("onClose called (%p)\n", (void*)&w);
 
@@ -336,7 +287,6 @@ void WindowController::onClose(IWindow& w) {
   IPlatform::instance().quit();
 }
 
-//------------------------------------------------------------------------
 void WindowController::onResize(IWindow& w, Size newSize) {
   SMTG_DBPRT1("onResize called (%p)\n", (void*)&w);
 
@@ -349,7 +299,6 @@ void WindowController::onResize(IWindow& w, Size newSize) {
   }
 }
 
-//------------------------------------------------------------------------
 Size WindowController::constrainSize(IWindow& w, Size requestedSize) {
   SMTG_DBPRT1("constrainSize called (%p)\n", (void*)&w);
 
@@ -364,7 +313,6 @@ Size WindowController::constrainSize(IWindow& w, Size requestedSize) {
   return requestedSize;
 }
 
-//------------------------------------------------------------------------
 void WindowController::onContentScaleFactorChanged(IWindow& w,
                                                    float newScaleFactor) {
   SMTG_DBPRT1("onContentScaleFactorChanged called (%p)\n", (void*)&w);
@@ -375,7 +323,6 @@ void WindowController::onContentScaleFactorChanged(IWindow& w,
   }
 }
 
-//------------------------------------------------------------------------
 tresult PLUGIN_API WindowController::resizeView(IPlugView* view,
                                                 ViewRect* newSize) {
   SMTG_DBPRT1("resizeView called (%p)\n", (void*)view);
@@ -397,7 +344,4 @@ tresult PLUGIN_API WindowController::resizeView(IPlugView* view,
   return kResultTrue;
 }
 
-//------------------------------------------------------------------------
-}  // namespace EditorHost
-}  // namespace Vst
-}  // namespace Steinberg
+}  // namespace kodo

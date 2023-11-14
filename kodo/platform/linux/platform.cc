@@ -10,8 +10,6 @@
 #include "kodo/platform/linux/runloop.h"
 #include "kodo/platform/linux/window.h"
 
-using namespace Steinberg::Vst::EditorHost;
-
 namespace kodo {
 namespace {
 
@@ -103,10 +101,7 @@ int main(int argc, char* argv[]) {
   std::vector<std::string> cmdArgs;
   for (int i = 1; i < argc; ++i) cmdArgs.push_back(argv[i]);
 
-  kodo::Platform::instance().setApplication(
-      std::make_unique<Steinberg::Vst::EditorHost::App>());
+  kodo::Platform::instance().setApplication(std::make_unique<kodo::App>());
 
   kodo::Platform::instance().run(cmdArgs);
-
-  return 0;
 }

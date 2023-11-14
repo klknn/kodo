@@ -7,41 +7,34 @@ namespace kodo {
 
 using LockGuard = std::lock_guard<std::recursive_mutex>;
 
-//------------------------------------------------------------------------
 RunLoop& RunLoop::instance() {
   static RunLoop gInstance;
   return gInstance;
 }
 
-//------------------------------------------------------------------------
 void RunLoop::setDisplay(Display* display) { this->display = display; }
 
-//------------------------------------------------------------------------
 void RunLoop::registerWindow(XID window, const EventCallback& callback) {
   map.emplace(window, callback);
 }
 
-//------------------------------------------------------------------------
 void RunLoop::unregisterWindow(XID window) {
   auto it = map.find(window);
   if (it == map.end()) return;
   map.erase(it);
 }
 
-//------------------------------------------------------------------------
 void RunLoop::registerFileDescriptor(int fd,
                                      const FileDescriptorCallback& callback) {
   fileDescriptors.emplace(fd, callback);
 }
 
-//------------------------------------------------------------------------
 void RunLoop::unregisterFileDescriptor(int fd) {
   auto it = fileDescriptors.find(fd);
   if (it == fileDescriptors.end()) return;
   fileDescriptors.erase(it);
 }
 
-//------------------------------------------------------------------------
 void RunLoop::select(timeval* timeout) {
   int nfds = 0;
   fd_set readFDs = {}, writeFDs = {}, exceptFDs = {};
@@ -65,7 +58,6 @@ void RunLoop::select(timeval* timeout) {
   }
 }
 
-//------------------------------------------------------------------------
 bool RunLoop::handleEvents() {
   auto count = XPending(display);
   if (count == 0) return false;
@@ -86,21 +78,17 @@ bool RunLoop::handleEvents() {
   return true;
 }
 
-//------------------------------------------------------------------------
 TimerID RunLoop::registerTimer(TimerInterval interval,
                                const TimerCallback& callback) {
   return timerProcessor.registerTimer(interval, callback);
 }
 
-//------------------------------------------------------------------------
 void RunLoop::unregisterTimer(TimerID id) {
   timerProcessor.unregisterTimer(id);
 }
 
-//------------------------------------------------------------------------
 bool timeValEmpty(timeval& val) { return val.tv_sec == 0 && val.tv_usec == 0; }
 
-//------------------------------------------------------------------------
 void RunLoop::start() {
   running = true;
 
@@ -123,12 +111,8 @@ void RunLoop::start() {
   }
 }
 
-//------------------------------------------------------------------------
 void RunLoop::stop() { running = false; }
 
-//------------------------------------------------------------------------
-//------------------------------------------------------------------------
-//------------------------------------------------------------------------
 uint64_t TimerProcessor::handleTimersAndReturnNextFireTimeInMs() {
   using std::chrono::time_point_cast;
 
@@ -161,28 +145,22 @@ uint64_t TimerProcessor::handleTimersAndReturnNextFireTimeInMs() {
   return (nextFireTime - current).count();
 }
 
-//------------------------------------------------------------------------
 void TimerProcessor::updateTimerNextFireTime(Timer& timer, TimePoint current) {
   timer.nextFireTime = current + Millisecond(timer.interval);
 }
 
-//------------------------------------------------------------------------
 void TimerProcessor::sortTimers() {
   std::sort(timers.begin(), timers.end(), [](const Timer& t1, const Timer& t2) {
     return t1.nextFireTime < t2.nextFireTime;
   });
 }
 
-//------------------------------------------------------------------------
 auto TimerProcessor::now() -> TimePoint {
-  using std::chrono::time_point_cast;
-
-  return time_point_cast<Millisecond>(Clock::now());
+  return std::chrono::time_point_cast<Millisecond>(Clock::now());
 }
 
-//------------------------------------------------------------------------
-auto TimerProcessor::registerTimer(TimerInterval interval,
-                                   const TimerCallback& callback) -> TimerID {
+TimerID TimerProcessor::registerTimer(TimerInterval interval,
+                                      const TimerCallback& callback) {
   auto timerId = ++timerIdCounter;
   Timer timer;
   timer.id = timerId;
@@ -196,7 +174,6 @@ auto TimerProcessor::registerTimer(TimerInterval interval,
   return timerId;
 }
 
-//------------------------------------------------------------------------
 void TimerProcessor::unregisterTimer(TimerID id) {
   for (auto it = timers.begin(), end = timers.end(); it != end; ++it) {
     if (it->id == id) {
@@ -206,5 +183,4 @@ void TimerProcessor::unregisterTimer(TimerID id) {
   }
 }
 
-//------------------------------------------------------------------------
 }  // namespace kodo

@@ -11,12 +11,10 @@
 
 namespace kodo {
 
-//------------------------------------------------------------------------
 using TimerID = uint64_t;
 using TimerInterval = uint64_t;
 using TimerCallback = std::function<void(TimerID)>;
 
-//------------------------------------------------------------------------
 class TimerProcessor {
  public:
   TimerID registerTimer(TimerInterval interval, const TimerCallback& callback);
@@ -45,7 +43,6 @@ class TimerProcessor {
   TimePoint now();
 };
 
-//------------------------------------------------------------------------
 class RunLoop {
  public:
   using EventCallback = std::function<bool(const XEvent& event)>;
