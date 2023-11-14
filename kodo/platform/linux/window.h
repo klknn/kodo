@@ -3,13 +3,13 @@
 #include <functional>
 
 #include "kodo/platform/iwindow.h"
+#include "pluginterfaces/base/ftypes.h"
+#include "pluginterfaces/base/funknown.h"
 
 struct _XDisplay;
 typedef struct _XDisplay Display;
 
-namespace Steinberg {
-namespace Vst {
-namespace EditorHost {
+namespace kodo {
 
 class X11Window : public IWindow {
  public:
@@ -33,7 +33,8 @@ class X11Window : public IWindow {
   Size getContentSize() override;
 
   NativePlatformWindow getNativePlatformWindow() const override;
-  tresult queryInterface(const TUID iid, void** obj) override;
+  Steinberg::tresult queryInterface(const Steinberg::TUID iid,
+                                    void** obj) override;
 
   void onIdle();
 
@@ -44,6 +45,4 @@ class X11Window : public IWindow {
   std::unique_ptr<Impl> impl;
 };
 
-}  // namespace EditorHost
-}  // namespace Vst
-}  // namespace Steinberg
+}  // namespace kodo

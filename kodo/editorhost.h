@@ -71,7 +71,7 @@ class App : public kodo::IApplication {
   VST3::Hosting::Module::Ptr module{nullptr};
   IPtr<PlugProvider> plugProvider{nullptr};
   Vst::HostApplication pluginContext;
-  WindowPtr window;
+  std::shared_ptr<kodo::IWindow> window;
   std::shared_ptr<WindowController> windowController;
 };
 

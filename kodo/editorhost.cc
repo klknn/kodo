@@ -50,6 +50,8 @@
 #include "pluginterfaces/vst/ivsteditcontroller.h"
 #include "pluginterfaces/vst/vsttypes.h"
 
+using namespace kodo;
+
 //------------------------------------------------------------------------
 namespace Steinberg {
 
@@ -196,6 +198,15 @@ void App::openEditor(const std::string& path,
     SMTG_DBPRT0("Open 2cd Editor...\n");
     createViewAndShow(editController);
   }
+}
+
+static Rect ViewRectToRect(ViewRect r) {
+  Rect result{};
+  result.origin.x = r.left;
+  result.origin.y = r.top;
+  result.size.width = r.right - r.left;
+  result.size.height = r.bottom - r.top;
+  return result;
 }
 
 //------------------------------------------------------------------------

@@ -10,11 +10,9 @@
 #include "kodo/platform/linux/runloop.h"
 #include "kodo/platform/linux/window.h"
 
-using namespace kodo;
+using namespace Steinberg::Vst::EditorHost;
 
-namespace Steinberg {
-namespace Vst {
-namespace EditorHost {
+namespace kodo {
 namespace {
 
 class Platform : public IPlatform {
@@ -99,18 +97,16 @@ class Platform : public IPlatform {
 
 IPlatform& IPlatform::instance() { return Platform::instance(); }
 
-}  // namespace EditorHost
-}  // namespace Vst
-}  // namespace Steinberg
+}  // namespace kodo
 
 int main(int argc, char* argv[]) {
   std::vector<std::string> cmdArgs;
   for (int i = 1; i < argc; ++i) cmdArgs.push_back(argv[i]);
 
-  Steinberg::Vst::EditorHost::Platform::instance().setApplication(
+  kodo::Platform::instance().setApplication(
       std::make_unique<Steinberg::Vst::EditorHost::App>());
 
-  Steinberg::Vst::EditorHost::Platform::instance().run(cmdArgs);
+  kodo::Platform::instance().run(cmdArgs);
 
   return 0;
 }

@@ -4,17 +4,22 @@
 #include <X11/Xutil.h>
 
 #include <cassert>
+#include <cstdint>
 #include <iostream>
 #include <unordered_map>
 
 #include "kodo/platform/linux/runloop.h"
+#include "pluginterfaces/gui/iplugview.h"
 #include "public.sdk/source/vst/utility/stringconvert.h"
 
-namespace Steinberg {
-namespace Vst {
-namespace EditorHost {
+using ::Steinberg::IPtr;
+using ::Steinberg::tresult;
+using ::Steinberg::TUID;
+namespace Linux = ::Steinberg::Linux;
 
-struct X11Window::Impl : public Linux::IRunLoop {
+namespace kodo {
+
+struct X11Window::Impl : public Steinberg::Linux::IRunLoop {
   Impl(X11Window* x11Window);
   bool init(const std::string& name, Size size, bool resizeable,
             const WindowControllerPtr& controller, Display* display,
@@ -70,10 +75,10 @@ struct X11Window::Impl : public Linux::IRunLoop {
                                    Linux::TimerInterval milliseconds) override;
   tresult PLUGIN_API unregisterTimer(Linux::ITimerHandler* handler) override;
 
-  uint32 PLUGIN_API addRef() override { return 1000; }
-  uint32 PLUGIN_API release() override { return 1000; }
+  uint32_t PLUGIN_API addRef() override { return 1000; }
+  uint32_t PLUGIN_API release() override { return 1000; }
   tresult PLUGIN_API queryInterface(const TUID, void**) override {
-    return kNoInterface;
+    return Steinberg::kNoInterface;
   }
 };
 
@@ -110,16 +115,16 @@ void X11Window::resize(Size newSize) { impl->resize(newSize, false); }
 Size X11Window::getContentSize() { return {}; }
 
 NativePlatformWindow X11Window::getNativePlatformWindow() const {
-  return {kPlatformTypeX11EmbedWindowID,
+  return {Steinberg::kPlatformTypeX11EmbedWindowID,
           reinterpret_cast<void*>(impl->plugParentWindow)};
 }
 
 tresult X11Window::queryInterface(const TUID iid, void** obj) {
-  if (FUnknownPrivate::iidEqual(iid, Linux::IRunLoop::iid)) {
+  if (Steinberg::FUnknownPrivate::iidEqual(iid, Linux::IRunLoop::iid)) {
     *obj = impl.get();
-    return kResultTrue;
+    return Steinberg::kResultTrue;
   }
-  return kNoInterface;
+  return Steinberg::kNoInterface;
 }
 
 void X11Window::onIdle() {}
@@ -268,57 +273,57 @@ bool X11Window::Impl::init(const std::string& name, Size size, bool resizeable,
 tresult PLUGIN_API X11Window::Impl::registerEventHandler(
     Linux::IEventHandler* handler, Linux::FileDescriptor fd) {
   if (!handler || eventHandlers.find(fd) != eventHandlers.end())
-    return kInvalidArgument;
+    return Steinberg::kInvalidArgument;
 
   RunLoop::instance().registerFileDescriptor(
       fd, [handler](int fd) { handler->onFDIsSet(fd); });
   eventHandlers.emplace(fd, handler);
-  return kResultTrue;
+  return Steinberg::kResultTrue;
 }
 
 //------------------------------------------------------------------------
 tresult PLUGIN_API
 X11Window::Impl::unregisterEventHandler(Linux::IEventHandler* handler) {
-  if (!handler) return kInvalidArgument;
+  if (!handler) return Steinberg::kInvalidArgument;
 
   for (auto it = eventHandlers.begin(), end = eventHandlers.end(); it != end;
        ++it) {
     if (it->second == handler) {
       RunLoop::instance().unregisterFileDescriptor(it->first);
       eventHandlers.erase(it);
-      return kResultTrue;
+      return Steinberg::kResultTrue;
     }
   }
 
-  return kResultFalse;
+  return Steinberg::kResultFalse;
 }
 
 //------------------------------------------------------------------------
 tresult PLUGIN_API X11Window::Impl::registerTimer(
     Linux::ITimerHandler* handler, Linux::TimerInterval milliseconds) {
-  if (!handler || milliseconds == 0) return kInvalidArgument;
+  if (!handler || milliseconds == 0) return Steinberg::kInvalidArgument;
 
   auto id = RunLoop::instance().registerTimer(
       milliseconds, [handler](auto) { handler->onTimer(); });
   timerHandlers.emplace(id, handler);
-  return kResultTrue;
+  return Steinberg::kResultTrue;
 }
 
 //------------------------------------------------------------------------
 tresult PLUGIN_API
 X11Window::Impl::unregisterTimer(Linux::ITimerHandler* handler) {
-  if (!handler) return kInvalidArgument;
+  if (!handler) return Steinberg::kInvalidArgument;
 
   for (auto it = timerHandlers.begin(), end = timerHandlers.end(); it != end;
        ++it) {
     if (it->second == handler) {
       RunLoop::instance().unregisterTimer(it->first);
       timerHandlers.erase(it);
-      return kResultTrue;
+      return Steinberg::kResultTrue;
     }
   }
 
-  return kNotImplemented;
+  return Steinberg::kNotImplemented;
 }
 
 //------------------------------------------------------------------------
@@ -576,6 +581,4 @@ bool X11Window::Impl::handlePlugEvent(const XEvent& event) {
   return res;
 }
 
-}  // namespace EditorHost
-}  // namespace Vst
-}  // namespace Steinberg
+}  // namespace kodo

@@ -3,12 +3,10 @@
 #include <memory>
 #include <string>
 
-#include "pluginterfaces/gui/iplugview.h"
+#include "pluginterfaces/base/ftypes.h"
+#include "pluginterfaces/base/funknown.h"
 
-//------------------------------------------------------------------------
-namespace Steinberg {
-namespace Vst {
-namespace EditorHost {
+namespace kodo {
 
 using Coord = int32_t;
 
@@ -27,15 +25,6 @@ struct Rect {
   Point origin;
   Size size;
 };
-
-inline Rect ViewRectToRect(ViewRect r) {
-  Rect result{};
-  result.origin.x = r.left;
-  result.origin.y = r.top;
-  result.size.width = r.right - r.left;
-  result.size.height = r.bottom - r.top;
-  return result;
-}
 
 struct NativePlatformWindow {
   std::string type;
@@ -69,11 +58,10 @@ class IWindow {
 
   virtual NativePlatformWindow getNativePlatformWindow() const = 0;
 
-  virtual tresult queryInterface(const TUID iid, void** obj) = 0;
+  virtual Steinberg::tresult queryInterface(const Steinberg::TUID iid,
+                                            void** obj) = 0;
 };
 
 using WindowPtr = std::shared_ptr<IWindow>;
 
-}  // namespace EditorHost
-}  // namespace Vst
-}  // namespace Steinberg
+}  // namespace kodo
