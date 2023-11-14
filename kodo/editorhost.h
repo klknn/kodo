@@ -53,7 +53,7 @@ namespace EditorHost {
 class WindowController;
 
 //------------------------------------------------------------------------
-class App : public IApplication {
+class App : public kodo::IApplication {
  public:
   ~App() noexcept override;
   void init(const std::vector<std::string>& cmdArgs) override;

@@ -19,4 +19,7 @@ cc_library(
 cc_library(
     name = "iwindow",
     hdrs = ["iwindow.h"],
+    deps = [
+        "@vst3sdk//:pluginterfaces"
+    ]
 )

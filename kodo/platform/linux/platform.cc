@@ -5,9 +5,12 @@
 #include <vector>
 
 #include "kodo/editorhost.h"
+#include "kodo/platform/iapplication.h"
 #include "kodo/platform/iplatform.h"
 #include "kodo/platform/linux/runloop.h"
 #include "kodo/platform/linux/window.h"
+
+using namespace kodo;
 
 namespace Steinberg {
 namespace Vst {
@@ -21,7 +24,7 @@ class Platform : public IPlatform {
     return gInstance;
   }
 
-  void setApplication(ApplicationPtr&& app) override {
+  void setApplication(std::unique_ptr<kodo::IApplication>&& app) override {
     application = std::move(app);
   }
 
@@ -87,7 +90,7 @@ class Platform : public IPlatform {
     }
   }
 
-  ApplicationPtr application;
+  std::unique_ptr<IApplication> application;
   Display* xDisplay{nullptr};
   std::vector<std::shared_ptr<X11Window>> windows;
 };

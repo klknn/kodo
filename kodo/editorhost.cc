@@ -288,7 +288,8 @@ void WindowController::onShow(IWindow& w) {
   if (!plugView) return;
 
   auto platformWindow = window->getNativePlatformWindow();
-  if (plugView->isPlatformTypeSupported(platformWindow.type) != kResultTrue) {
+  if (plugView->isPlatformTypeSupported(platformWindow.type.c_str()) !=
+      kResultTrue) {
     IPlatform::instance().kill(
         -1, std::string("PlugView does not support platform type:") +
                 platformWindow.type);
@@ -296,7 +297,7 @@ void WindowController::onShow(IWindow& w) {
 
   plugView->setFrame(this);
 
-  if (plugView->attached(platformWindow.ptr, platformWindow.type) !=
+  if (plugView->attached(platformWindow.ptr, platformWindow.type.c_str()) !=
       kResultTrue) {
     IPlatform::instance().kill(-1, "Attaching PlugView failed");
   }
