@@ -42,7 +42,7 @@
 #include <iostream>
 
 #include "base/source/fcommandline.h"
-#include "kodo/platform/appinit.h"
+#include "kodo/platform/iplatform.h"
 #include "pluginterfaces/base/funknown.h"
 #include "pluginterfaces/gui/iplugview.h"
 #include "pluginterfaces/gui/iplugviewcontentscalesupport.h"
@@ -65,8 +65,6 @@ inline bool operator!=(const ViewRect& r1, const ViewRect& r2) {
 
 namespace Vst {
 namespace EditorHost {
-
-static AppInit gInit(std::make_unique<App>());
 
 //------------------------------------------------------------------------
 class WindowController : public IWindowController, public IPlugFrame {

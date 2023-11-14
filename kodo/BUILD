@@ -7,8 +7,8 @@ cc_library(
     hdrs = ["editorhost.h"],
     srcs = ["editorhost.cc"],
     deps = [
-        "//kodo/platform:appinit",
         "//kodo/platform:iapplication",
+        "//kodo/platform:iplatform",
         "//kodo/platform:iwindow",
         "@vst3sdk//:base",
         "@vst3sdk//:pluginterfaces",

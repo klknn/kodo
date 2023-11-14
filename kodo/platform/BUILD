@@ -3,15 +3,6 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 package(default_visibility = ["//kodo:__subpackages__"])
 
 cc_library(
-    name = "appinit",
-    hdrs = ["appinit.h"],
-    deps = [
-        ":iapplication",
-        ":iplatform",
-    ],
-)
-
-cc_library(
     name = "iapplication",
     hdrs = ["iapplication.h"],
 )
