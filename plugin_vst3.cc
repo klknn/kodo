@@ -167,14 +167,14 @@ class ImPlugFrame : public Steinberg::IPlugFrame {
   absl::Status Attach(void* handle) {
 #if defined _WIN32
     // Win32.
-    if (plug_view_->isPlatformTypeSupported(Steinberg::kPlatformTypeHWND)) {
-      LOG_FIRST_N(INFO, 1) << "Try HWND platform";
-      if (plug_view_->attached(handle, Steinberg::kPlatformTypeHWND) !=
-          Steinberg::kResultOk) {
-        return absl::InvalidArgumentError(
-            "cannot call attached(handle, HWND).");
-      }
-      return absl::OkStatus();
+    if (plug_view_->isPlatformTypeSupported(Steinberg::kPlatformTypeHWND) !=
+        Steinberg::kResultOk) {
+      return absl::FailedPreconditionError("HWND platform is unsupported.");
+    }
+    LOG_FIRST_N(INFO, 1) << "Try HWND platform";
+    if (plug_view_->attached(handle, Steinberg::kPlatformTypeHWND) !=
+        Steinberg::kResultOk) {
+      return absl::InvalidArgumentError("cannot call attached(handle, HWND).");
     }
 #elif defined __APPLE__
     // OSX Cocoa.
@@ -187,9 +187,8 @@ class ImPlugFrame : public Steinberg::IPlugFrame {
             "cannot call attached(handle, HIView).");
       }
       return absl::OkStatus();
-    }
-    if (plug_view_->isPlatformTypeSupported(Steinberg::kPlatformTypeNSView) ==
-        Steinberg::kResultOk) {
+    } else if (plug_view_->isPlatformTypeSupported(
+                   Steinberg::kPlatformTypeNSView) == Steinberg::kResultOk) {
       LOG_FIRST_N(INFO, 1) << "NSView platform";
       if (plug_view_->attached(contentView(handle),
                                Steinberg::kPlatformTypeNSView) !=
@@ -198,24 +197,28 @@ class ImPlugFrame : public Steinberg::IPlugFrame {
             "cannot call attached(handle, NSView).");
       }
       return absl::OkStatus();
+    } else {
+      return absl::FailedPreconditionError(
+          "HIView nor NSView platform is unsupported.");
     }
 #elif defined __linux__
     // Linux X11.
     if (plug_view_->isPlatformTypeSupported(
-            Steinberg::kPlatformTypeX11EmbedWindowID) == Steinberg::kResultOk) {
-      LOG_FIRST_N(INFO, 1) << "X11 platform";
-      if (plug_view_->attached(handle,
-                               Steinberg::kPlatformTypeX11EmbedWindowID) !=
-          Steinberg::kResultOk) {
-        return absl::InvalidArgumentError(
-            "cannot call attached(handle, X11EmbedWindow).");
-      }
-      return absl::OkStatus();
+            Steinberg::kPlatformTypeX11EmbedWindowID) != Steinberg::kResultOk) {
+      return absl::FailedPreconditionError(
+          "X11EmbedWindowID platform is unsupported.");
+    }
+    LOG_FIRST_N(INFO, 1) << "X11 platform";
+    if (plug_view_->attached(handle,
+                             Steinberg::kPlatformTypeX11EmbedWindowID) !=
+        Steinberg::kResultOk) {
+      return absl::InvalidArgumentError(
+          "cannot call attached(handle, X11EmbedWindow).");
     }
 #else
 #error "Unknown platform."
 #endif
-    return absl::UnimplementedError("Unsupported platform.");
+    return absl::OkStatus();
   }
 
   Steinberg::tresult PLUGIN_API queryInterface(const Steinberg::TUID _iid,
